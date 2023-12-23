@@ -24,20 +24,19 @@ use bevy_rapier3d::prelude::{
     ActiveEvents, Collider, CollisionEvent, ContactForceEvent, ContactForceEventThreshold,
     NoUserData, RapierPhysicsPlugin, RigidBody, Velocity,
 };
-use bullet::{Bullet, BulletPlugin, Lifetime, Damage};
+use damage::{ Damage};
 use character_controller::{
     character_controller_system, create_character_controller,
     CharacterController,
 };
+use damage_text::{AppliedDamage, DamageTextPlugin};
 use enemy::EnemyPlugin;
 use health::{health_system, Health};
 use health_bars::{HealthBarPlugin, HealthBar};
+use lifetime::{Lifetime, LifetimePlugin};
 use projectile::{ProjectilePlugin, Projectile};
 
 pub mod character_controller;
-// pub mod resource;
-// pub mod interaction_flags;
-pub mod bullet;
 // pub mod health;
 pub mod enemy;
 pub mod health_bars;
@@ -45,6 +44,9 @@ pub mod orbit_camera;
 pub mod projectile;
 pub mod hit_box;
 mod health;
+mod lifetime;
+mod damage;
+mod damage_text;
 
 pub const PLAYER: u16 = 0b1;
 pub const STATIC_GEOMETRY: u16 = 0b10;
@@ -90,21 +92,22 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
-        .add_plugin(BulletPlugin)
         .init_resource::<InputState>()
         .init_resource::<MovementResource>()
         .add_startup_system(create_character_controller)
         .add_plugin(orbit_camera::OrbitCameraPlugin)
         .add_plugin(EnemyPlugin)
+        .add_plugin(LifetimePlugin)
         .add_startup_system(setup_graphics)
         .add_startup_system(setup_world)
         .add_system(character_controller_system)
         .add_system(cursor_grab)
         .add_system(on_mouse_shoot)
-        .add_system(display_events)
+        // .add_system(display_events)
         .add_plugin(HealthBarPlugin)
         .add_system(health_system)
         .add_plugin(ProjectilePlugin)
+        .add_plugin(DamageTextPlugin)
         .run();
 }
 
@@ -166,13 +169,9 @@ fn on_mouse_shoot(
                 ..default()
             })
             .insert(Lifetime {
-                timer: Timer::from_seconds(20.0, TimerMode::Once),
+                timer: Timer::from_seconds(1.0, TimerMode::Once),
             })
             .insert(Velocity::linear(direction * 100.0))
-            .insert(Bullet {
-                direction,
-                speed: 200.0,
-            })
             .insert(Name::new("Bullet"))
             .insert(RigidBody::Dynamic)
             .insert(ActiveEvents::COLLISION_EVENTS)
@@ -189,7 +188,7 @@ fn on_mouse_shoot(
 fn display_events(
     mut collision_events: EventReader<CollisionEvent>,
     // _contact_force_events: EventReader<ContactForceEvent>,
-    commands: Commands,
+    mut commands: Commands,
     mut health_entities: Query<(Entity, &mut Health)>,
     damage_dealer_entities: Query<(Entity, &Damage)>
 ) {
@@ -197,29 +196,31 @@ fn display_events(
         match collision_event {
             CollisionEvent::Started(first_entity, second_entity, _) => {
 
-                info!("Calculating ball hit {:#?} {:#?}", health_entities, damage_dealer_entities);
 
-                let mut health_ent = health_entities.get_mut(*first_entity).map_err(|e| {
-                    info!("Error!{:#?}", e);
-                }).ok();
+                let mut health_ent = health_entities.get_mut(*first_entity).ok();
 
                 if let None = health_ent {
                     health_ent = health_entities.get_mut(*second_entity).ok();
                 }
 
-                let (_, mut health) = if let Some(ent) = health_ent {
+                let (hit_ent, mut health) = if let Some(ent) = health_ent {
                     ent
                 }else{
-                    info!("No entity with health!");
+                    // debug!("No entity with health!");
                     return;
                 };
 
-                let damange_ent = damage_dealer_entities.get(*first_entity).map_err(|_| damage_dealer_entities.get(*second_entity)).ok();
+                let damage_ent = damage_dealer_entities.get(*first_entity).map_err(|_| damage_dealer_entities.get(*second_entity)).ok();
 
-                if let Some((_, Damage{amount})) = damange_ent {
+                if let Some((_, Damage{amount})) = damage_ent {
 
-                    info!("WE are doing this!");
-                    health.current = health.current - amount;
+                    info!("Applying damage!");
+
+                    commands.entity(hit_ent).insert(AppliedDamage{
+                        value: *amount
+                    });
+                    
+                    // health.current = health.current - amount;
                 };
 
             }

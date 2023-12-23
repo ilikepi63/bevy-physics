@@ -1,6 +1,6 @@
 
 use bevy::prelude::*;
-use crate::{hit_box::HitBox, health::Health, bullet::Damage};
+use crate::{hit_box::HitBox, health::Health, damage::Damage, damage_text::AppliedDamage};
 use std::cmp::min;
 
 #[derive(Component)]
@@ -10,11 +10,11 @@ pub struct Projectile{
 
 pub fn projectile_system(
     mut commands: Commands,
-    mut hitboxes: Query<(&Transform, &HitBox, &mut Health)>,
+    mut hitboxes: Query<(Entity, &Transform, &HitBox, &mut Health)>,
     projectiles: Query<(Entity, &Transform, &Projectile, &Damage)>
 ) {
 
-    for (transform, hitbox, mut health) in hitboxes.iter_mut() {
+    for (entity, transform, hitbox, mut health) in hitboxes.iter_mut() {
         for (projectile_entity, projectile_transform, projectile, damage) in projectiles.iter() {
 
 
@@ -26,9 +26,13 @@ pub fn projectile_system(
 
             let distance = ( (safe_minus(projectile_translation.z, hitbox_translation.z) ).powi(2) + (safe_minus(projectile_translation.x, hitbox_translation.x)).powi(2) ).sqrt();
 
-            info!("Distance: {}", distance);
-
             if distance < hitbox.radius as f32 {
+
+                info!("Spawning entity");
+
+                commands.entity(entity).insert(AppliedDamage{
+                    value: damage.amount
+                });
 
                 health.current = health.current - min(damage.amount, health.current);
 
