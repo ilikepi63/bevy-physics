@@ -1,5 +1,10 @@
 use bevy::prelude::*;
 
+#[derive(Component)]
+pub struct Damage{
+    pub amount: u32
+}
+
 #[derive(Reflect, Component, Default)]
 #[reflect(Component)]
 pub struct Bullet {

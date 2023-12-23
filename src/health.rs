@@ -1,13 +1,21 @@
-use bevy_health_bar3d::prelude::{HealthBarPlugin, Percentage};
+// use bevy_healu
+use bevy::{prelude::*, transform::commands};
 
 #[derive(Component)]
-struct Health {
-    max: f32,
-    current: f32,
+pub struct Health {
+    pub max: u32,
+    pub current: u32,
 }
 
-impl Percentage for Health {
-    fn value(&self) -> f32 {
-        self.current / self.max
+pub fn health_system(
+    mut commands: Commands,
+    entities: Query<(Entity, &Health)>
+) {
+
+    for (entity, health) in entities.iter() {
+        if health.current == 0 {
+            commands.entity(entity).despawn();
+        }
     }
+
 }
