@@ -13,6 +13,10 @@ use crate::{
 // use crate::resource::InputBindings;
 
 #[derive(Debug, Component)]
+pub struct Player;
+
+
+#[derive(Debug, Component)]
 pub struct CharacterController {
     pub yaw: f32,
 
@@ -84,6 +88,7 @@ pub fn create_character_controller(
             current: 100,
             max: 100,
         },
+        Player{}
         // RigidBodyBuilder::dynamic().lock_rotations().build(),
 
     ));

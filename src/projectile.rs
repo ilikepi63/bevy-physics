@@ -1,6 +1,6 @@
 
 use bevy::prelude::*;
-use crate::{hit_box::HitBox, health::Health, damage::Damage, damage_text::AppliedDamage};
+use crate::{hit_box::HitBox, health::Health, damage::Damage, damage_text::{AppliedDamage, spawn_damage_text_on_entity}, utils::safe_minus};
 use std::cmp::min;
 
 #[derive(Component)]
@@ -28,11 +28,7 @@ pub fn projectile_system(
 
             if distance < hitbox.radius as f32 {
 
-                info!("Spawning entity");
-
-                commands.entity(entity).insert(AppliedDamage{
-                    value: damage.amount
-                });
+                spawn_damage_text_on_entity(&mut commands, entity, damage.amount);
 
                 health.current = health.current - min(damage.amount, health.current);
 
@@ -47,13 +43,6 @@ pub fn projectile_system(
 
 } 
 
-pub fn safe_minus(one: f32, two: f32) -> f32 {
-    if one >= two {
-        one - two
-    }else{
-        two - one
-    }
-}
 
 pub struct ProjectilePlugin;
 

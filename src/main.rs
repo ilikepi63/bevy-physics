@@ -1,22 +1,23 @@
+use std::cmp::min;
 use std::f32::consts::PI;
 use std::process::Command;
 
-use bevy::ecs::event::{ManualEventReader};
+use bevy::ecs::event::ManualEventReader;
 use bevy::ecs::query::Without;
 use bevy::input::mouse::MouseMotion;
 use bevy::log::info;
-use bevy::pbr::{CascadeShadowConfigBuilder, AmbientLight};
+use bevy::pbr::{AmbientLight, CascadeShadowConfigBuilder};
 use bevy::prelude::{
-    default, shape, App, Assets, Color, Commands, Component, DirectionalLightBundle, Entity, EventReader, Input, KeyCode, Mesh,
-    MouseButton, Name, PbrBundle, Quat, Query, Res, ResMut, Resource, StandardMaterial,
-    Transform, Vec3, With,
+    default, shape, App, Assets, Color, Commands, Component, DirectionalLightBundle, Entity,
+    EventReader, Input, KeyCode, Mesh, MouseButton, Name, PbrBundle, Quat, Query, Res, ResMut,
+    Resource, StandardMaterial, Transform, Vec3, With,
 };
 use bevy::render::camera::Camera;
 use bevy::text::{TextAlignment, TextStyle};
 use bevy::time::{Timer, TimerMode};
 use bevy::transform::components::GlobalTransform;
-use bevy::ui::{PositionType, Style, UiRect, Val};
 use bevy::ui::node_bundles::TextBundle;
+use bevy::ui::{PositionType, Style, UiRect, Val};
 use bevy::window::{CursorGrabMode, PrimaryWindow, Window};
 use bevy::DefaultPlugins;
 // use bevy_inspector_egui::egui::Key;
@@ -24,29 +25,30 @@ use bevy_rapier3d::prelude::{
     ActiveEvents, Collider, CollisionEvent, ContactForceEvent, ContactForceEventThreshold,
     NoUserData, RapierPhysicsPlugin, RigidBody, Velocity,
 };
-use damage::{ Damage};
 use character_controller::{
-    character_controller_system, create_character_controller,
-    CharacterController,
+    character_controller_system, create_character_controller, CharacterController, Player,
 };
-use damage_text::{AppliedDamage, DamageTextPlugin};
+use damage::Damage;
+use damage_text::{spawn_damage_text_on_entity, AppliedDamage, DamageTextPlugin};
 use enemy::EnemyPlugin;
 use health::{health_system, Health};
-use health_bars::{HealthBarPlugin, HealthBar};
+use health_bars::{HealthBar, HealthBarPlugin};
 use lifetime::{Lifetime, LifetimePlugin};
-use projectile::{ProjectilePlugin, Projectile};
+use projectile::{Projectile, ProjectilePlugin};
 
 pub mod character_controller;
 // pub mod health;
-pub mod enemy;
-pub mod health_bars;
-pub mod orbit_camera;
-pub mod projectile;
-pub mod hit_box;
-mod health;
-mod lifetime;
 mod damage;
 mod damage_text;
+pub mod enemy;
+mod health;
+pub mod health_bars;
+pub mod hit_box;
+mod lifetime;
+pub mod orbit_camera;
+pub mod projectile;
+pub mod utils;
+mod auras;
 
 pub const PLAYER: u16 = 0b1;
 pub const STATIC_GEOMETRY: u16 = 0b10;
@@ -85,7 +87,6 @@ struct Despawnable {}
 #[derive(Component)]
 struct Floor {}
 
-
 // HEALTH BAR
 
 fn main() {
@@ -108,9 +109,9 @@ fn main() {
         .add_system(health_system)
         .add_plugin(ProjectilePlugin)
         .add_plugin(DamageTextPlugin)
+        .add_system(basic_attack)
         .run();
 }
-
 
 fn setup_graphics(mut commands: Commands) {
     // light
@@ -177,26 +178,54 @@ fn on_mouse_shoot(
             .insert(ActiveEvents::COLLISION_EVENTS)
             .insert(ContactForceEventThreshold(30.0))
             .insert(Collider::ball(1.0))
-            .insert(Damage{
-                amount: 10
-            })
-            .insert(Projectile{
-                despawn_after_hit: true
+            .insert(Damage { amount: 10 })
+            .insert(Projectile {
+                despawn_after_hit: true,
             });
     }
 }
+
+fn basic_attack(
+    buttons: Res<Input<KeyCode>>,
+    player: Query<&Transform, With<Player>>,
+    mut commands: Commands,
+
+    // This is a big query right now
+    mut other_entities: Query<(Entity, &Transform, &mut Health), (With<Health>, Without<Player>)>,
+) {
+    if buttons.just_pressed(KeyCode::R) {
+        let player = player.single().translation;
+
+        for (entity, transform, mut health) in other_entities.iter_mut() {
+            // check if the entity is within radius
+            let distance = ((utils::safe_minus(transform.translation.z, player.z)).powi(2)
+                + (utils::safe_minus(transform.translation.x, player.x)).powi(2))
+            .sqrt();
+
+            // this just takes into account distance along the xz plane
+            if distance < 2.0 {
+                let amount = 10;
+
+                spawn_damage_text_on_entity(&mut commands, entity, amount);
+
+                health.current = health.current - min(amount, health.current);
+            }
+        }
+
+        // calculate front and sides
+    }
+}
+
 fn display_events(
     mut collision_events: EventReader<CollisionEvent>,
     // _contact_force_events: EventReader<ContactForceEvent>,
     mut commands: Commands,
     mut health_entities: Query<(Entity, &mut Health)>,
-    damage_dealer_entities: Query<(Entity, &Damage)>
+    damage_dealer_entities: Query<(Entity, &Damage)>,
 ) {
     for collision_event in collision_events.iter() {
         match collision_event {
             CollisionEvent::Started(first_entity, second_entity, _) => {
-
-
                 let mut health_ent = health_entities.get_mut(*first_entity).ok();
 
                 if let None = health_ent {
@@ -205,24 +234,25 @@ fn display_events(
 
                 let (hit_ent, mut health) = if let Some(ent) = health_ent {
                     ent
-                }else{
+                } else {
                     // debug!("No entity with health!");
                     return;
                 };
 
-                let damage_ent = damage_dealer_entities.get(*first_entity).map_err(|_| damage_dealer_entities.get(*second_entity)).ok();
+                let damage_ent = damage_dealer_entities
+                    .get(*first_entity)
+                    .map_err(|_| damage_dealer_entities.get(*second_entity))
+                    .ok();
 
-                if let Some((_, Damage{amount})) = damage_ent {
-
+                if let Some((_, Damage { amount })) = damage_ent {
                     info!("Applying damage!");
 
-                    commands.entity(hit_ent).insert(AppliedDamage{
-                        value: *amount
-                    });
-                    
+                    commands
+                        .entity(hit_ent)
+                        .insert(AppliedDamage { value: *amount });
+
                     // health.current = health.current - amount;
                 };
-
             }
             _ => {}
         }
