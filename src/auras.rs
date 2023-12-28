@@ -10,7 +10,7 @@ use crate::{
     health::Health,
 };
 
-enum Aura {
+pub enum Aura {
     MovementEffect,
     OvertimeEffect,
     DamageChange,

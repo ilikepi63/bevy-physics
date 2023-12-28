@@ -26,7 +26,7 @@ pub fn setup_tooltip(mut commands: Commands, asset_server: &Res<AssetServer>) {
             NodeBundle {
                 style: Style {
                     size: Size{
-                        width: Val::Px(100.0),
+                        // width: Val::Px(100.0),
                         ..Default::default()
                     },
                     position_type: PositionType::Absolute,
@@ -68,16 +68,23 @@ pub fn setup_tooltip(mut commands: Commands, asset_server: &Res<AssetServer>) {
 
             parent.spawn(TextBundle {
                 text: Text {
-                    linebreak_behaviour: bevy::text::BreakLineOn::WordBoundary,
+                    linebreak_behaviour: bevy::text::BreakLineOn::AnyCharacter,
                     sections: vec![TextSection {
-                    
                         value: String::with_capacity(256),
                         style: TextStyle {
                             font: asset_server.load("Rosela.ttf"),
                             font_size: 12.0,
                             color: Color::WHITE,
+                            
                         },
                     }],
+                    ..Default::default()
+                },
+                style: Style{
+                    max_size: Size{
+                        width: Val::Px(200.0),
+                        ..Default::default()
+                    },
                     ..Default::default()
                 },
                 ..Default::default()
