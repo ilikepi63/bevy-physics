@@ -115,8 +115,8 @@ fn update_healthbars(
 
             let (x, y) = (convert_ndc_to_percentage_values(x), convert_ndc_to_percentage_values(y));
 
-            hb_style.position.left = Val::Percent(x);
-            hb_style.position.top = Val::Percent(100.0 - y);
+            hb_style.position.left = Val::Percent(x - 1.0);
+            hb_style.position.top = Val::Percent(100.0 - y - 6.0);
 
             // This emits 360 for some reason - need to investigate
             // if bartrans.1 < 359.0 || bartrans.1 > 361.0 {

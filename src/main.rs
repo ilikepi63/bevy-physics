@@ -2,6 +2,7 @@ use std::cmp::min;
 use std::f32::consts::PI;
 use std::process::Command;
 
+use auras::{Overtime, apply_overtime, AurasPlugin, OvertimeComponent};
 use bevy::ecs::event::ManualEventReader;
 use bevy::ecs::query::Without;
 use bevy::input::mouse::MouseMotion;
@@ -35,6 +36,7 @@ use health::{health_system, Health};
 use health_bars::{HealthBar, HealthBarPlugin};
 use lifetime::{Lifetime, LifetimePlugin};
 use projectile::{Projectile, ProjectilePlugin};
+use ui::UIPlugin;
 
 pub mod character_controller;
 // pub mod health;
@@ -48,6 +50,7 @@ mod lifetime;
 pub mod orbit_camera;
 pub mod projectile;
 pub mod utils;
+mod ui;
 mod auras;
 
 pub const PLAYER: u16 = 0b1;
@@ -110,6 +113,8 @@ fn main() {
         .add_plugin(ProjectilePlugin)
         .add_plugin(DamageTextPlugin)
         .add_system(basic_attack)
+        .add_plugin(AurasPlugin)
+        .add_plugin(UIPlugin)
         .run();
 }
 
@@ -191,12 +196,12 @@ fn basic_attack(
     mut commands: Commands,
 
     // This is a big query right now
-    mut other_entities: Query<(Entity, &Transform, &mut Health), (With<Health>, Without<Player>)>,
+    mut other_entities: Query<(Entity, &Transform, &mut Health, Option<&mut OvertimeComponent>), (With<Health>, Without<Player>)>,
 ) {
     if buttons.just_pressed(KeyCode::R) {
         let player = player.single().translation;
 
-        for (entity, transform, mut health) in other_entities.iter_mut() {
+        for (entity, transform, mut health, mut overtime_comp) in other_entities.iter_mut() {
             // check if the entity is within radius
             let distance = ((utils::safe_minus(transform.translation.z, player.z)).powi(2)
                 + (utils::safe_minus(transform.translation.x, player.x)).powi(2))
@@ -209,6 +214,8 @@ fn basic_attack(
                 spawn_damage_text_on_entity(&mut commands, entity, amount);
 
                 health.current = health.current - min(amount, health.current);
+
+                apply_overtime(entity, &mut commands, Overtime::damage_per_second(3, 5), &mut overtime_comp);
             }
         }
 

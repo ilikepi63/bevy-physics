@@ -12,8 +12,6 @@ fn lifetime_despawn(
     time: Res<Time>,
 ) {
 
-    // info!("Running Lifetime");
-
     for (entity, mut lifetime) in &mut entities {
         lifetime.timer.tick(time.delta());
         if lifetime.timer.just_finished() {
