@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 bevy = "0.10"
 bevy_rapier3d = "0.21.0"
+bevy_hanabi = "0.6"

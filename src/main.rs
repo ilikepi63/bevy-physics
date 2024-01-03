@@ -1,9 +1,10 @@
 use std::cmp::min;
 use std::f32::consts::PI;
 use std::process::Command;
+use std::time::Duration;
 
-use auras::{Overtime, apply_overtime, AurasPlugin, OvertimeComponent};
-use bevy::ecs::event::ManualEventReader;
+use auras::{apply_overtime, AurasPlugin, Overtime, OvertimeComponent};
+use bevy::ecs::event::{EventWriter, ManualEventReader};
 use bevy::ecs::query::Without;
 use bevy::input::mouse::MouseMotion;
 use bevy::log::info;
@@ -36,10 +37,13 @@ use health::{health_system, Health};
 use health_bars::{HealthBar, HealthBarPlugin};
 use lifetime::{Lifetime, LifetimePlugin};
 use projectile::{Projectile, ProjectilePlugin};
+use spells::{CastSpellFire, CastSpellInit, SpellsPlugin};
 use ui::UIPlugin;
+use bevy_hanabi::HanabiPlugin;
 
 pub mod character_controller;
 // pub mod health;
+mod auras;
 mod damage;
 mod damage_text;
 pub mod enemy;
@@ -49,10 +53,11 @@ pub mod hit_box;
 mod lifetime;
 pub mod orbit_camera;
 pub mod projectile;
-pub mod utils;
-mod ui;
-mod auras;
 mod spells;
+mod ui;
+pub mod utils;
+mod particles;
+mod aoe;
 
 pub const PLAYER: u16 = 0b1;
 pub const STATIC_GEOMETRY: u16 = 0b10;
@@ -89,7 +94,7 @@ fn setup_world(
 struct Despawnable {}
 
 #[derive(Component)]
-struct Floor {}
+pub struct Floor {}
 
 // HEALTH BAR
 
@@ -97,6 +102,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_plugin(HanabiPlugin)
         .init_resource::<InputState>()
         .init_resource::<MovementResource>()
         .add_startup_system(create_character_controller)
@@ -116,6 +122,8 @@ fn main() {
         .add_system(basic_attack)
         .add_plugin(AurasPlugin)
         .add_plugin(UIPlugin)
+        .add_plugin(SpellsPlugin)
+        .add_plugin(aoe::AoeTargetingPlugin)
         .run();
 }
 
@@ -154,73 +162,29 @@ fn cursor_grab(
 
 fn on_mouse_shoot(
     buttons: Res<Input<KeyCode>>,
-    mut camera_query: Query<&mut Transform, With<CharacterController>>,
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
+    mut spell_writer: EventWriter<spells::CastSpellInit>,
 ) {
     if buttons.just_pressed(KeyCode::Q) {
-        let camera = camera_query.single_mut();
-
-        let direction = camera.forward();
-
-        commands
-            .spawn(PbrBundle {
-                mesh: meshes.add(Mesh::from(shape::UVSphere {
-                    radius: 0.2,
-                    stacks: 18,
-                    sectors: 36,
-                })),
-                material: materials.add(Color::BLACK.into()),
-                transform: Transform::from_translation(camera.translation),
-                ..default()
-            })
-            .insert(Lifetime {
-                timer: Timer::from_seconds(1.0, TimerMode::Once),
-            })
-            .insert(Velocity::linear(direction * 100.0))
-            .insert(Name::new("Bullet"))
-            .insert(RigidBody::Dynamic)
-            .insert(ActiveEvents::COLLISION_EVENTS)
-            .insert(ContactForceEventThreshold(30.0))
-            .insert(Collider::ball(1.0))
-            .insert(Damage { amount: 10 })
-            .insert(Projectile {
-                despawn_after_hit: true,
-            });
+        spell_writer.send(CastSpellInit {
+            spell_id: "s".to_string(),
+            cast_time: spells::CastTime::Duration(Duration::from_secs(2)),
+            damage: 10,
+            apply_auras: vec![],
+        });
     }
 }
 
 fn basic_attack(
     buttons: Res<Input<KeyCode>>,
-    player: Query<&Transform, With<Player>>,
-    mut commands: Commands,
-
-    // This is a big query right now
-    mut other_entities: Query<(Entity, &Transform, &mut Health, Option<&mut OvertimeComponent>), (With<Health>, Without<Player>)>,
+    mut spell_writer: EventWriter<spells::CastSpellInit>,
 ) {
     if buttons.just_pressed(KeyCode::R) {
-        let player = player.single().translation;
-
-        for (entity, transform, mut health, mut overtime_comp) in other_entities.iter_mut() {
-            // check if the entity is within radius
-            let distance = ((utils::safe_minus(transform.translation.z, player.z)).powi(2)
-                + (utils::safe_minus(transform.translation.x, player.x)).powi(2))
-            .sqrt();
-
-            // this just takes into account distance along the xz plane
-            if distance < 2.0 {
-                let amount = 10;
-
-                spawn_damage_text_on_entity(&mut commands, entity, amount);
-
-                health.current = health.current - min(amount, health.current);
-
-                apply_overtime(entity, &mut commands, Overtime::damage_per_second(3, 5), &mut overtime_comp);
-            }
-        }
-
-        // calculate front and sides
+        spell_writer.send(CastSpellInit {
+            spell_id: "a".to_string(),
+            cast_time: spells::CastTime::Instant,
+            damage: 10,
+            apply_auras: vec![],
+        });
     }
 }
 

@@ -20,7 +20,7 @@ impl Default for TooltipState {
 pub struct Tooltip;
 
 // we spawn the tooltip
-pub fn setup_tooltip(mut commands: Commands, asset_server: &Res<AssetServer>) {
+pub fn setup_tooltip(commands: &mut Commands, asset_server: &Res<AssetServer>) {
     commands
         .spawn((
             NodeBundle {

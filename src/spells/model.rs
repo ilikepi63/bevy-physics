@@ -13,7 +13,7 @@ pub enum CastTime{
 
 /// Struct representing a spell initialization cast.
 pub struct CastSpellInit{
-    pub spell_name: String,
+    pub spell_id: String,
     pub cast_time: CastTime,
     pub damage: u32,
     pub apply_auras: Vec<Aura>
