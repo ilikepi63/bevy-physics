@@ -4,7 +4,9 @@ use crate::health_bars::PrimaryCamera;
 
 use self::{
     action_bar::setup_action_bar,
-    cast_bar::{setup_cast_bar, update_cast_bar, update_cast_bar_visible, update_cast_bar_invisible},
+    cast_bar::{
+        setup_cast_bar, update_cast_bar, update_cast_bar_invisible, update_cast_bar_visible,
+    },
     tooltip::{mouseover_system, setup_tooltip, tooltip_events, ShowsTooltip, TooltipState},
 };
 
@@ -17,20 +19,14 @@ static BUTTON_SIZE: f32 = 30.0;
 #[derive(Component)]
 pub struct RootNode;
 
-fn setup_ui(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-) {
-
+fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     // root node
     commands
         .spawn((
             NodeBundle {
                 style: Style {
-                    size: Size {
-                        width: Val::Percent(100.0),
-                        height: Val::Percent(100.0),
-                    },
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::End,
                     ..default()
@@ -52,12 +48,17 @@ impl Plugin for UIPlugin {
     fn build(&self, app: &mut App) {
         // app.init_resource::<TooltipState>();
         app.add_event::<TooltipState>();
-        app.add_startup_system(setup_ui);
-        app.add_startup_system(setup_cast_bar);
-        app.add_system(tooltip_events);
-        app.add_system(mouseover_system);
-        app.add_system(update_cast_bar);
-        app.add_system(update_cast_bar_visible);
-        app.add_system(update_cast_bar_invisible);
+        app.add_systems(Startup, (setup_ui, setup_cast_bar));
+
+        app.add_systems(
+            Update,
+            (
+                tooltip_events,
+                mouseover_system,
+                update_cast_bar,
+                update_cast_bar_visible,
+                update_cast_bar_invisible,
+            ),
+        );
     }
 }

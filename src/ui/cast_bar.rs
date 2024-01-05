@@ -21,18 +21,11 @@ pub fn setup_cast_bar(
         .spawn((
             NodeBundle {
                 style: Style {
-                    size: Size {
-                        // width: Val::Px(100.0),\
-                        height: Val::Px(20.0),
-                        width: Val::Px(CAST_BAR_SIZE_IN_PX),
-                        ..Default::default()
-                    },
+                    height: Val::Px(20.0),
+                    width: Val::Px(CAST_BAR_SIZE_IN_PX),
                     position_type: PositionType::Absolute,
-                    position: UiRect {
-                        left: Val::Px(window.resolution.width() / 2.0 - CAST_BAR_SIZE_IN_PX / 2.0),
-                        top: Val::Percent(75.0),
-                        ..Default::default()
-                    },
+                    left: Val::Px(window.resolution.width() / 2.0 - CAST_BAR_SIZE_IN_PX / 2.0),
+                    top: Val::Percent(75.0),
                     // padding: UiRect::all(Val::Px(10.0)),
                     flex_direction: FlexDirection::Column,
                     // overflow: Overflow::
@@ -48,10 +41,8 @@ pub fn setup_cast_bar(
             parent.spawn((
                 NodeBundle {
                     style: Style {
-                        size: Size {
-                            width: Val::Px(0.0),
-                            height: Val::Percent(100.0),
-                        },
+                        width: Val::Px(0.0),
+                        height: Val::Percent(100.0),
                         flex_direction: FlexDirection::Column,
                         // padding: UiRect::all(Val::Px(10.0)),
                         ..Default::default()
@@ -73,7 +64,7 @@ pub fn update_cast_bar(
             / casting.total_duration.as_millis()) as f32; // should always be between 0 and 100
 
         for mut bar_inner in &mut bar_inner {
-            bar_inner.size.width = Val::Percent(casting_percent);
+            bar_inner.width = Val::Percent(casting_percent);
         }
     }
 }

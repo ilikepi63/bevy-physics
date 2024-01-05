@@ -154,6 +154,6 @@ pub struct AurasPlugin;
 impl Plugin for AurasPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         // app.add_system(emit_auras);
-        app.add_system(overtime_system);
+        app.add_systems(Update, overtime_system);
     }
 }

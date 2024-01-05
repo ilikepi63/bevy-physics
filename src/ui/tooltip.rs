@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+#[derive(Event)]
 pub struct TooltipState {
     title: String, // Ideally we'd want to avoid allocations here, so we pre-allocate these to a fixed number
     description: String,
@@ -25,16 +26,9 @@ pub fn setup_tooltip(commands: &mut Commands, asset_server: &Res<AssetServer>) {
         .spawn((
             NodeBundle {
                 style: Style {
-                    size: Size{
-                        // width: Val::Px(100.0),
-                        ..Default::default()
-                    },
                     position_type: PositionType::Absolute,
-                    position: UiRect {
-                        right: Val::Px(1.0),
-                        bottom: Val::Px(1.0),
-                        ..Default::default()
-                    },
+                    right: Val::Px(1.0),
+                    bottom: Val::Px(1.0),
                     padding: UiRect::all(Val::Px(10.0)),
                     flex_direction: FlexDirection::Column,
                     // overflow: Overflow::
@@ -68,7 +62,6 @@ pub fn setup_tooltip(commands: &mut Commands, asset_server: &Res<AssetServer>) {
 
             parent.spawn(TextBundle {
                 text: Text {
-                    linebreak_behaviour: bevy::text::BreakLineOn::AnyCharacter,
                     sections: vec![TextSection {
                         value: String::with_capacity(256),
                         style: TextStyle {
@@ -81,10 +74,7 @@ pub fn setup_tooltip(commands: &mut Commands, asset_server: &Res<AssetServer>) {
                     ..Default::default()
                 },
                 style: Style{
-                    max_size: Size{
-                        width: Val::Px(200.0),
-                        ..Default::default()
-                    },
+                    max_width: Val::Px(200.0),
                     ..Default::default()
                 },
                 ..Default::default()

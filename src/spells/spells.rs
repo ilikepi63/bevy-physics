@@ -1,7 +1,7 @@
 use std::{cmp::min, time::Duration};
 
 use bevy::{prelude::*, utils::Uuid};
-use bevy_hanabi::{EffectAsset, ParticleEffect, ParticleEffectBundle};
+// use bevy_hanabi::{EffectAsset, ParticleEffect, ParticleEffectBundle};
 use bevy_rapier3d::prelude::*;
 
 use crate::{
@@ -12,7 +12,7 @@ use crate::{
     health::Health,
     lifetime::Lifetime,
     projectile::Projectile,
-    utils, particles::make_particle,
+    utils,
 };
 
 use super::{model::CastSpellFire, CastSpellInit, CastTime, casting::Casting};
@@ -27,7 +27,7 @@ pub fn spell_init_system(
     mut player_query: Query<Entity, With<Player>>,
     mut commands: Commands
 ) {
-    for event in &mut cast_spell_init_events {
+    for event in &mut cast_spell_init_events.read() {
 
         match event.cast_time {
             CastTime::Instant => {
@@ -70,7 +70,7 @@ pub fn spell_system(
         (With<Health>, Without<Player>),
     >,
 ) {
-    for event in &mut cast_spell_fire_events {
+    for event in &mut cast_spell_fire_events.read() {
         match event.id.as_str() {
             "s" => {
                 let mut character = character_query.single_mut();

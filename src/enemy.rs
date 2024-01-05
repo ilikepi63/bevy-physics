@@ -91,7 +91,7 @@ pub struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(spawner);
+        app.add_systems(Startup, spawner);
         // app.add_system(enemy_health_system);
     }
 }

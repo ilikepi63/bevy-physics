@@ -7,10 +7,8 @@ fn spawn_action_bar_button(parent: &mut ChildBuilder, button: &str, tooltip: Sho
         .spawn((
             NodeBundle {
                 style: Style {
-                    size: Size {
-                        width: Val::Px(BUTTON_SIZE),
-                        height: Val::Px(BUTTON_SIZE),
-                    },
+                    width: Val::Px(BUTTON_SIZE),
+                    height: Val::Px(BUTTON_SIZE),
                     margin: UiRect::all(Val::Px(1.0)),
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,

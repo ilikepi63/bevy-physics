@@ -24,6 +24,6 @@ pub struct LifetimePlugin;
 
 impl Plugin for LifetimePlugin{
     fn build(&self, app: &mut App) {
-        app.add_system(lifetime_despawn);
+        app.add_systems(Update, lifetime_despawn);
     }
 }

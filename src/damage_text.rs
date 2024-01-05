@@ -31,7 +31,7 @@ pub struct DamageText {
 pub struct DamageTextBundle {
     pub amount: DamageText,
     pub(crate) damage: DamageTextAttach,
-    #[bundle]
+    #[bundle()]
     pub(crate) text: TextBundle,
 }
 
@@ -40,9 +40,7 @@ pub struct DamageTextPlugin;
 impl Plugin for DamageTextPlugin {
     fn build(&self, app: &mut App) {
         // app.add_system(add_damage_text_to_entites_with_applied_damage);
-        app.add_system(spawn_damage_text_children);
-        app.add_system(update_damage_text);
-        app.add_system(lifetime_despawn);
+        app.add_systems(Update, (spawn_damage_text_children, update_damage_text, lifetime_despawn));
     }
 }
 
@@ -109,13 +107,13 @@ fn update_damage_text(
             let remaining_ms = lifetime.timer.elapsed().as_millis();
 
             if remaining_ms > 2000 {
-                hb_style.position.top = Val::Percent(100.0 - y);
+                hb_style.top = Val::Percent(100.0 - y);
             } else {
                 let remaining_ms_in_f32 = (remaining_ms as f32 / 2000.0);
 
-                hb_style.position.top = Val::Percent((100.0 - y) - (5.0 * remaining_ms_in_f32));
+                hb_style.top = Val::Percent((100.0 - y) - (5.0 * remaining_ms_in_f32));
             }
-            hb_style.position.left = Val::Percent(x);
+            hb_style.left = Val::Percent(x);
             // hb_style.position.top = Val::Percent(100.0 - y);
 
             let current = text.value;
@@ -165,13 +163,10 @@ fn spawn_damage_text_children(
                         // transform: Transform::from_xyz(bartrans.0, bartrans.1, 1.0),
                         style: Style {
                             position_type: PositionType::Absolute,
-                            position: UiRect {
-                                left: Val::Percent(convert_ndc_to_percentage_values(bartrans.0)),
-                                top: Val::Percent(convert_ndc_to_percentage_values(
-                                    100.0 - bartrans.1,
-                                )),
-                                ..Default::default()
-                            },
+                            left: Val::Percent(convert_ndc_to_percentage_values(bartrans.0)),
+                            top: Val::Percent(convert_ndc_to_percentage_values(
+                                100.0 - bartrans.1,
+                            )),
                             ..Default::default()
                         },
                         text: Text {

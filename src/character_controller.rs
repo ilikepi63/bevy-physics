@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy::ui::camera_config::UiCameraConfig;
-use bevy_rapier3d::rapier::{geometry::{ColliderBuilder, InteractionGroups}, dynamics::RigidBodyBuilder};
+use bevy_rapier3d::{rapier::{geometry::{ColliderBuilder, InteractionGroups}, dynamics::RigidBodyBuilder}, control::KinematicCharacterController};
 
 use crate::{
     health_bars::{PrimaryCamera},
@@ -67,6 +67,7 @@ pub fn create_character_controller(
     let result = camera_transform.translation - (camera_transform.forward().normalize() * 20.0);
 
     commands.spawn((
+        KinematicCharacterController::default(),
         CharacterController {
             camera_distance: 20.,
             ..Default::default()
@@ -88,7 +89,7 @@ pub fn create_character_controller(
             current: 100,
             max: 100,
         },
-        Player{}
+        Player{},
         // RigidBodyBuilder::dynamic().lock_rotations().build(),
 
     ));
@@ -158,11 +159,11 @@ pub fn character_controller_system(
         character.translation -= left * time.delta_seconds() * speed;
     }
 
-    if keyboard.pressed(KeyCode::LShift) {
+    if keyboard.pressed(KeyCode::ShiftLeft) {
         movement.speed = 20.0
     }
 
-    if keyboard.just_released(KeyCode::LShift) {
+    if keyboard.just_released(KeyCode::ShiftLeft) {
         movement.speed = 7.0;
     }
 

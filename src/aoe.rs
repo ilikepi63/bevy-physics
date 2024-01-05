@@ -86,6 +86,6 @@ pub struct AoeTargetingPlugin;
 
 impl Plugin for AoeTargetingPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(aoe_targeting_system);
+        app.add_systems(Update, aoe_targeting_system);
     }
 }

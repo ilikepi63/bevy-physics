@@ -46,7 +46,7 @@ impl Default for HealthBar {
 #[derive(Bundle)]
 pub struct HealthBarBundle {
     pub(crate) healthbar: HealthBarAttach,
-    #[bundle]
+    #[bundle()]
     pub(crate) text: TextBundle,
 }
 
@@ -54,10 +54,11 @@ pub struct HealthBarPlugin;
 
 impl Plugin for HealthBarPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(add_healthbars_to_entites_with_health);
-        app.add_system(spawn_health_bar_children);
-        app.add_system(update_healthbars);
-        app.add_system(despawn_unattached_healthbars);
+        app.add_systems(Update, (add_healthbars_to_entites_with_health,
+            spawn_health_bar_children,
+            update_healthbars,
+            despawn_unattached_healthbars
+        ));
     }
 }
 
@@ -115,8 +116,8 @@ fn update_healthbars(
 
             let (x, y) = (convert_ndc_to_percentage_values(x), convert_ndc_to_percentage_values(y));
 
-            hb_style.position.left = Val::Percent(x - 1.0);
-            hb_style.position.top = Val::Percent(100.0 - y - 6.0);
+            hb_style.left = Val::Percent(x - 1.0);
+            hb_style.top = Val::Percent(100.0 - y - 6.0);
 
             // This emits 360 for some reason - need to investigate
             // if bartrans.1 < 359.0 || bartrans.1 > 361.0 {
@@ -167,11 +168,8 @@ fn spawn_health_bar_children(
                     // transform: Transform::from_xyz(bartrans.0, bartrans.1, 1.0),
                     style: Style {
                         position_type: PositionType::Absolute,
-                        position: UiRect {
-                            left: Val::Percent(convert_ndc_to_percentage_values(bartrans.0)),
-                            top: Val::Percent(convert_ndc_to_percentage_values(100.0 - bartrans.1)),
-                            ..Default::default()
-                        },
+                        left: Val::Percent(convert_ndc_to_percentage_values(bartrans.0)),
+                        top: Val::Percent(convert_ndc_to_percentage_values(100.0 - bartrans.1)),
                         ..Default::default()
                     },
                     text: Text {

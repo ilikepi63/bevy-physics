@@ -32,10 +32,9 @@ use bevy::prelude::*;
 use bevy::render::camera::Camera;
 use std::ops::RangeInclusive;
 
-
-
 const LINE_TO_PIXEL_RATIO: f32 = 0.1;
 
+#[derive(Event)]
 pub enum CameraEvents {
     Orbit(Vec2),
     Pan(Vec2),
@@ -191,11 +190,16 @@ impl OrbitCameraPlugin {
 }
 impl Plugin for OrbitCameraPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(Self::emit_motion_events)
-            .add_system(Self::mouse_motion_system)
-            .add_system(Self::emit_zoom_events)
-            .add_system(Self::zoom_system)
-            .add_system(Self::update_transform_system)
-            .add_event::<CameraEvents>();
+        app.add_systems(
+            Update,
+            (
+                Self::emit_motion_events,
+                Self::mouse_motion_system,
+                Self::emit_zoom_events,
+                Self::zoom_system,
+                Self::update_transform_system,
+            ),
+        )
+        .add_event::<CameraEvents>();
     }
 }
