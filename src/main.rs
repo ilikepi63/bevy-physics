@@ -27,21 +27,16 @@ use bevy::DefaultPlugins;
 // use bevy_inspector_egui::egui::Key;
 use bevy::asset::{AssetServer, Handle, LoadState};
 use bevy::scene::SceneBundle;
-use bevy_rapier3d::geometry::ComputedColliderShape;
-use bevy_rapier3d::prelude::{
-    ActiveEvents, Collider, CollisionEvent, ContactForceEvent, ContactForceEventThreshold,
-    NoUserData, RapierPhysicsPlugin, RigidBody, Velocity,
-};
-use character_controller::{
-    character_controller_system, create_character_controller, CharacterController, Player,
-};
+
+use bevy_xpbd_3d::plugins::{PhysicsDebugPlugin, PhysicsPlugins};
+use character_controller::{create_character_controller, character_direction_system};
 use damage::Damage;
 use damage_text::{spawn_damage_text_on_entity, AppliedDamage, DamageTextPlugin};
 use enemy::EnemyPlugin;
 use health::{health_system, Health};
 use health_bars::{HealthBar, HealthBarPlugin};
 use lifetime::{Lifetime, LifetimePlugin};
-use map::MapPlugin;
+use map::{MapPlugin, setup_map};
 use projectile::{Projectile, ProjectilePlugin};
 use spells::{CastSpellFire, CastSpellInit, SpellsPlugin};
 use ui::UIPlugin;
@@ -50,6 +45,7 @@ pub mod character_controller;
 // pub mod health;
 mod aoe;
 mod auras;
+mod controller;
 mod damage;
 mod damage_text;
 pub mod enemy;
@@ -148,8 +144,12 @@ fn main() {
         .init_resource::<MovementResource>()
         .add_plugins((
             DefaultPlugins,
-            RapierPhysicsPlugin::<NoUserData>::default(),
-            MapPlugin,
+            PhysicsPlugins::default(),
+            controller::CharacterControllerPlugin,
+            // RapierPhysicsPlugin::<NoUserData>::default(),
+
+            // PhysicsDebugPlugin::default(),
+            // MapPlugin,
             orbit_camera::OrbitCameraPlugin,
             EnemyPlugin,
             LifetimePlugin,
@@ -160,17 +160,21 @@ fn main() {
             UIPlugin,
             SpellsPlugin,
             aoe::AoeTargetingPlugin,
+            // RapierDebugRenderPlugin {
+            //     enabled: true,
+            //     ..Default::default()
+            // }
         ))
-        .add_systems(Startup, (setup_graphics, create_character_controller))
+        .add_systems(Startup, (setup_map, setup_graphics, create_character_controller))
         // .add_startup_system(setup_world)
         .add_systems(
             Update,
             (
-                character_controller_system,
                 cursor_grab,
                 on_mouse_shoot,
                 health_system,
                 basic_attack,
+                // character_direction_system
             ),
         )
         .run();
@@ -181,7 +185,7 @@ fn setup_graphics(mut commands: Commands) {
 
     commands.insert_resource(AmbientLight {
         color: Color::WHITE,
-        brightness: 10.0,
+        brightness: 1.0,
     });
 }
 

@@ -1,11 +1,17 @@
 use bevy::prelude::*;
 use bevy::ui::camera_config::UiCameraConfig;
-use bevy_rapier3d::{rapier::{geometry::{ColliderBuilder, InteractionGroups}, dynamics::RigidBodyBuilder}, control::KinematicCharacterController};
+// use bevy_rapier3d::prelude::*;
+use bevy_xpbd_3d::{
+    math::{Scalar, Vector},
+    prelude::*,
+};
 
 use crate::{
-    health_bars::{PrimaryCamera},
+    controller::{CharacterControllerBundle, ControllerGravity, CharacterController},
+    health::Health,
+    health_bars::PrimaryCamera,
     orbit_camera::{self, OrbitCamera},
-    MovementResource, health::Health,
+    MovementResource,
 };
 
 // use crate::{interaction_flags, resource};
@@ -14,31 +20,6 @@ use crate::{
 
 #[derive(Debug, Component)]
 pub struct Player;
-
-
-#[derive(Debug, Component)]
-pub struct CharacterController {
-    pub yaw: f32,
-
-    pub camera_distance: f32,
-    pub camera_pitch: f32,
-
-    pub grounded: bool,
-}
-
-impl Default for CharacterController {
-    fn default() -> Self {
-        CharacterController {
-            yaw: 0.0,
-            camera_distance: 20.,
-            camera_pitch: 30.0f32.to_radians(),
-            grounded: true,
-        }
-    }
-}
-
-#[derive(Debug, Component)]
-pub struct CharacterDirection(pub Vec3);
 
 pub fn create_character_controller(
     mut commands: Commands,
@@ -49,7 +30,7 @@ pub fn create_character_controller(
     let transform = Transform::from_xyz(-2.0, 1.5, 5.0).looking_at(
         Vec3 {
             x: 0.0,
-            y: 1.0,
+            y: 3.0,
             z: 0.0,
         },
         Vec3::Y,
@@ -66,32 +47,50 @@ pub fn create_character_controller(
 
     let result = camera_transform.translation - (camera_transform.forward().normalize() * 20.0);
 
+    // commands.spawn((
+    //     Collider::capsule(1.0, 0.4),
+
+    //     // Transform::default(),
+    //     // GlobalTransform::default(),
+    //     PbrBundle {
+    //         mesh: meshes.add(Mesh::from(shape::Capsule {
+    //             radius: 0.4,
+    //             ..default()
+    //         })),
+    //         material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
+    //         transform: Transform::from_xyz(0.0, 6.0, 0.0),
+    //         ..default()
+    //     },
+    //     RigidBody::Kinematic,
+    //     ControllerGravity(Vector::NEG_Y * 9.81 * 2.0)
+    //     // RigidBody::Dynamic,
+    //     // GravityScale(1.0),
+    //     // Velocity::zero(), // RigidBodyBuilder::dynamic().lock_rotations().build(),
+    // ));
+
     commands.spawn((
-        KinematicCharacterController::default(),
-        CharacterController {
-            camera_distance: 20.,
-            ..Default::default()
-        },
-        CharacterDirection(Vec3 {
-            x: 0.0,
-            y: 2.0,
-            z: 0.0,
-        }),
         // Transform::default(),
         // GlobalTransform::default(),
         PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Capsule::default())),
+            mesh: meshes.add(Mesh::from(shape::Capsule {
+                radius: 0.4,
+                ..default()
+            })),
             material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-            transform,
+            transform: Transform::from_xyz(0.0, 1.5, 0.0),
             ..default()
         },
         Health {
             current: 100,
             max: 100,
         },
-        Player{},
-        // RigidBodyBuilder::dynamic().lock_rotations().build(),
-
+        Player {},
+        CharacterControllerBundle::new(Collider::capsule(1.0, 0.4), Vector::NEG_Y * 9.81 * 2.0)
+            .with_movement(30.0, 0.92, 7.0, (30.0 as Scalar).to_radians()),
+        // Collider::ball(1.0),
+        // RigidBody::Dynamic,
+        // GravityScale(1.0),
+        // Velocity::zero(), // RigidBodyBuilder::dynamic().lock_rotations().build(),
     ));
 
     commands
@@ -109,70 +108,112 @@ pub fn create_character_controller(
 
 pub fn character_direction_system(
     camera_query: Query<(&Transform, &Camera), (With<Camera3d>, Changed<OrbitCamera>)>,
-    mut character: Query<&mut CharacterDirection, With<CharacterDirection>>,
+    mut character: Query<&mut Transform, With<CharacterController>>,
 ) {
     let (transform, _) = camera_query.single();
 
     // let camera_direction = transform.forward();
 
-    character.single_mut().0 = transform.forward();
+    let mut character = character.single_mut();
+
+    let forward = Vec3::from_array([transform.forward().x, 0.0, transform.forward().z]);
+
+    character.look_to(forward, Vec3::Y);
 }
 
-pub fn character_controller_system(
-    keyboard: Res<Input<KeyCode>>,
-    mouse_button_input: Res<Input<MouseButton>>,
-    mut query: Query<&mut OrbitCamera>,
-    // mut query: Query<(&OrbitCamera, &mut Transform), (Changed<OrbitCamera>, With<Camera>)>,
-    mut character_query: Query<(&mut Transform, &CharacterDirection), With<CharacterController>>,
+// pub fn character_controller_system(
+//     keyboard: Res<Input<KeyCode>>,
+//     mouse_button_input: Res<Input<MouseButton>>,
+//     mut query: Query<&mut OrbitCamera>,
+//     mut character_query: Query<(&mut Transform), With<CharacterController>>,
 
-    time: Res<Time>,
-    mut movement: ResMut<MovementResource>,
-    // camera_query: Query<(&Transform), (With<Camera>, Changed<Camera>)>,
-) {
-    let mut camera = query.single_mut();
-    let (mut character, _character_direction) = character_query.single_mut();
+//     time: Res<Time>,
+//     mut movement: ResMut<MovementResource>,
+//     // camera_query: Query<(&Transform), (With<Camera>, Changed<Camera>)>,
+// ) {
+//     let mut camera = query.single_mut();
+//     let (mut character) = character_query.single_mut();
 
-    let mut forward = character.forward();
-    forward.y = 0.0;
-    forward = forward.normalize();
+//     let mut forward = character.forward();
+//     forward.y = 0.0;
+//     forward = forward.normalize();
 
-    let mut left = character.left();
-    left.y = 0.0;
-    left = left.normalize();
+//     let mut left = character.left();
+//     left.y = 0.0;
+//     left = left.normalize();
 
-    let speed = movement.speed;
-    //Leafwing
-    if keyboard.pressed(KeyCode::W) {
-        camera.center += forward * time.delta_seconds() * speed;
-        character.translation += forward * time.delta_seconds() * speed;
-    }
-    if keyboard.pressed(KeyCode::S) {
-        camera.center -= forward * time.delta_seconds() * speed;
-        character.translation -= forward * time.delta_seconds() * speed;
-    }
-    if keyboard.pressed(KeyCode::A) {
-        camera.center += left * time.delta_seconds() * speed;
-        character.translation += left * time.delta_seconds() * speed;
-    }
-    if keyboard.pressed(KeyCode::D) {
-        camera.center -= left * time.delta_seconds() * speed;
-        character.translation -= left * time.delta_seconds() * speed;
-    }
+//     let speed = movement.speed;
 
-    if keyboard.pressed(KeyCode::ShiftLeft) {
-        movement.speed = 20.0
-    }
+//     //Leafwing
+//     if keyboard.pressed(KeyCode::W) {
+//         camera.center += forward * time.delta_seconds() * speed;
+//         character.translation += forward * time.delta_seconds() * speed;
+//         // velocity.linvel = forward * speed;
+//     }
+//     if keyboard.pressed(KeyCode::S) {
+//         camera.center -= forward * time.delta_seconds() * speed;
+//         character.translation -= forward * time.delta_seconds() * speed;
+//         // vector_direction -= forward;
+//     }
+//     if keyboard.pressed(KeyCode::A) {
+//         camera.center += left * time.delta_seconds() * speed;
+//         character.translation += left * time.delta_seconds() * speed;
+//         // vector_direction += left;
+//     }
+//     if keyboard.pressed(KeyCode::D) {
+//         camera.center -= left * time.delta_seconds() * speed;
+//         character.translation -= left * time.delta_seconds() * speed;
+//         // vector_direction -= left;
+//     }
 
-    if keyboard.just_released(KeyCode::ShiftLeft) {
-        movement.speed = 7.0;
-    }
+//     // Stop moving
 
-    if mouse_button_input.pressed(camera.rotate_button) {
-        let mut camera_direction = camera.direction;
+//     // if keyboard.just_released(KeyCode::W) {
+//     //     // camera.center += forward * time.delta_seconds() * speed;
+//     //     // character.translation += forward * time.delta_seconds() * speed;
+//     //     velocity.linvel = velocity.linvel - forward * 1000.0;
+//     // }
+//     // if keyboard.just_released(KeyCode::S) {
+//     //     // camera.center -= forward * time.delta_seconds() * speed;
+//     //     velocity.linvel = velocity.linvel + forward * 1000.0;
+//     // }
+//     // if keyboard.just_released(KeyCode::A) {
+//     //     // camera.center += left * time.delta_seconds() * speed;
+//     //     velocity.linvel = velocity.linvel - left * 1000.0;
+//     // }
+//     // if keyboard.just_released(KeyCode::D) {
+//     //     // camera.center -= left * time.delta_seconds() * speed;
+//     //     velocity.linvel = velocity.linvel + left * 1000.0;
+//     // }
 
-        camera_direction.y = forward.y;
-        // camera_direction.x = forward.x;
+//     // Something else
 
-        character.look_to(camera_direction, Vec3::Y)
-    }
-}
+//     if keyboard.pressed(KeyCode::ShiftLeft) {
+//         movement.speed = 20.0
+//     }
+
+//     if keyboard.just_released(KeyCode::ShiftLeft) {
+//         movement.speed = 7.0;
+//     }
+
+//     if mouse_button_input.pressed(camera.rotate_button) {
+//         let mut camera_direction = camera.direction;
+
+//         camera_direction.y = forward.y;
+//         // camera_direction.x = forward.x;
+
+//         character.look_to(camera_direction, Vec3::Y)
+//     }
+// }
+
+// Define a player movement system
+// pub fn player_jumps(
+//     keyboard_input: Res<Input<KeyCode>>,
+//     mut players: Query<(&Player), With<Player>>,
+// ) {
+//     // for (_, mut velocity) in players.iter_mut() {
+//     //     if keyboard_input.pressed(KeyCode::Space) {
+//     //         velocity.linvel = Vec3::new(0., 1., 0.).into();
+//     //     }
+//     // }
+// }

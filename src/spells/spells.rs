@@ -2,10 +2,9 @@ use std::{cmp::min, time::Duration};
 
 use bevy::{prelude::*, utils::Uuid};
 // use bevy_hanabi::{EffectAsset, ParticleEffect, ParticleEffectBundle};
-use bevy_rapier3d::prelude::*;
 
 use crate::{
-    auras::{apply_overtime, OvertimeComponent, Overtime},
+    auras::{apply_overtime, Overtime, OvertimeComponent},
     character_controller::Player,
     damage::Damage,
     damage_text::spawn_damage_text_on_entity,
@@ -15,49 +14,41 @@ use crate::{
     utils,
 };
 
-use super::{model::CastSpellFire, CastSpellInit, CastTime, casting::Casting};
+use super::{casting::Casting, model::CastSpellFire, CastSpellInit, CastTime};
 
 static SPELL_UUID: &str = "s";
 static MELEE_UUID: &str = "a";
-
 
 pub fn spell_init_system(
     mut cast_spell_init_events: EventReader<CastSpellInit>,
     mut cast_spell_fire_events: EventWriter<CastSpellFire>,
     mut player_query: Query<Entity, With<Player>>,
-    mut commands: Commands
+    mut commands: Commands,
 ) {
     for event in &mut cast_spell_init_events.read() {
-
         match event.cast_time {
-            CastTime::Instant => {
-                cast_spell_fire_events.send(CastSpellFire { id: event.spell_id.to_string() })
-            },
+            CastTime::Instant => cast_spell_fire_events.send(CastSpellFire {
+                id: event.spell_id.to_string(),
+            }),
             CastTime::Duration(duration) => {
-
-
-                
                 let player = player_query.single_mut();
 
-                commands.entity(player).insert(Casting{
+                commands.entity(player).insert(Casting {
                     spell_id: event.spell_id.to_string(),
                     current_duration: Duration::ZERO,
                     total_duration: duration,
                 });
             }
         }
-
-
     }
 }
 
 pub fn spell_system(
     mut cast_spell_fire_events: EventReader<CastSpellFire>,
-    mut character_query: Query<&mut Transform, With<Player>>,
+    character_query: Query<&Transform, With<Player>>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-
 
     // This is a big query right now
     mut other_entities: Query<
@@ -73,12 +64,12 @@ pub fn spell_system(
     for event in &mut cast_spell_fire_events.read() {
         match event.id.as_str() {
             "s" => {
-                let mut character = character_query.single_mut();
-                cast_spell(&mut character, &mut commands, &mut meshes, &mut materials)
+                let character = character_query.single();
+                cast_spell(&character, &mut commands, &mut meshes, &mut materials)
             }
             "a" => {
-                let mut character = character_query.single_mut();
-                basic_attack(&mut character, &mut commands,  &mut other_entities)
+                let character = character_query.single();
+                basic_attack(&character, &mut commands, &mut other_entities)
             }
             _ => {}
         }
@@ -86,7 +77,7 @@ pub fn spell_system(
 }
 
 fn cast_spell(
-    character: &mut Transform,
+    character: &Transform,
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardMaterial>>,
@@ -98,33 +89,31 @@ fn cast_spell(
 
     commands
         .spawn(
-
             // ParticleEffectBundle {
             //     effect: ParticleEffect::new(portal),
             //     transform: Transform::IDENTITY,
             //     ..Default::default()
             // },
             PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::UVSphere {
-                radius: 0.2,
-                stacks: 18,
-                sectors: 36,
-            })),
-            material: materials.add(Color::BLACK.into()),
-            transform: Transform::from_translation(character.translation),
-            ..default()
-        }
-    
-    )
+                mesh: meshes.add(Mesh::from(shape::UVSphere {
+                    radius: 0.2,
+                    stacks: 18,
+                    sectors: 36,
+                })),
+                material: materials.add(Color::BLACK.into()),
+                transform: Transform::from_translation(character.translation),
+                ..default()
+            },
+        )
         .insert(Lifetime {
             timer: Timer::from_seconds(1.0, TimerMode::Once),
         })
-        .insert(Velocity::linear(direction * 100.0))
+        // .insert(Velocity::linear(direction * 100.0))
         .insert(Name::new("Bullet"))
-        .insert(RigidBody::Dynamic)
-        .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(ContactForceEventThreshold(30.0))
-        .insert(Collider::ball(1.0))
+        // .insert(RigidBody::Dynamic)
+        // .insert(ActiveEvents::COLLISION_EVENTS)
+        // .insert(ContactForceEventThreshold(30.0))
+        // .insert(Collider::ball(1.0))
         .insert(Damage { amount: 10 })
         .insert(Projectile {
             despawn_after_hit: true,
@@ -133,7 +122,7 @@ fn cast_spell(
 
 fn basic_attack(
     // buttons: Res<Input<KeyCode>>,
-    player: &mut Transform,
+    player: &Transform,
     commands: &mut Commands,
     other_entities: &mut Query<
         (

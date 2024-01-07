@@ -32,6 +32,8 @@ use bevy::prelude::*;
 use bevy::render::camera::Camera;
 use std::ops::RangeInclusive;
 
+use crate::controller::{MovementAction, MovementAcceleration, JumpImpulse, CharacterController};
+
 const LINE_TO_PIXEL_RATIO: f32 = 0.1;
 
 #[derive(Event)]
@@ -134,7 +136,7 @@ impl OrbitCameraPlugin {
                 continue;
             }
 
-            for event in events.iter() {
+            for event in events.read() {
                 match event {
                     CameraEvents::Orbit(delta) => {
                         camera.x -= delta.x * camera.rotate_sensitivity * time.delta_seconds();
@@ -156,7 +158,7 @@ impl OrbitCameraPlugin {
         mut query: Query<&OrbitCamera>,
     ) {
         let mut total = 0.0;
-        for event in mouse_wheel_events.iter() {
+        for event in mouse_wheel_events.read() {
             total += event.y
                 * match event.unit {
                     Line => 1.0,
@@ -178,7 +180,7 @@ impl OrbitCameraPlugin {
         mut events: EventReader<CameraEvents>,
     ) {
         for mut camera in query.iter_mut() {
-            for event in events.iter() {
+            for event in events.read() {
                 if camera.enabled {
                     if let CameraEvents::Zoom(distance) = event {
                         camera.distance *= camera.zoom_sensitivity.powf(*distance);
@@ -188,6 +190,18 @@ impl OrbitCameraPlugin {
         }
     }
 }
+
+/// Responds to [`MovementAction`] events and moves character controllers accordingly.
+fn movement(
+    mut _movement_event_reader: EventReader<MovementAction>,
+    mut controllers: Query<&Transform, With<CharacterController>>,
+    mut camera: Query<&mut OrbitCamera>
+) {
+    // Precision is adjusted so that the example works with
+    // both the `f32` and `f64` features. Otherwise you don't need this
+    camera.single_mut().center = controllers.single().translation;
+}
+
 impl Plugin for OrbitCameraPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
@@ -198,6 +212,7 @@ impl Plugin for OrbitCameraPlugin {
                 Self::emit_zoom_events,
                 Self::zoom_system,
                 Self::update_transform_system,
+                movement
             ),
         )
         .add_event::<CameraEvents>();

@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_rapier3d::{rapier::geometry::ColliderBuilder, dynamics::RigidBody, geometry::Collider};
 
 use crate::{health_bars::{
     get_sceen_transform_and_visibility, HealthBarAttach, HealthBarBundle, PrimaryCamera,

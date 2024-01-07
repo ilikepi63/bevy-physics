@@ -1,107 +1,41 @@
-
 use std::slice::Iter;
 
-use bevy::{prelude::*, asset::LoadState};
-use bevy_rapier3d::prelude::*;
+use bevy::{asset::LoadState, prelude::*};
+// use bevy_rapier3d::prelude::*;
+use bevy_xpbd_3d::{
+    math::{Scalar, Vector},
+    prelude::*,
+};
 
-use crate::Floor;
-
-#[derive(Resource)]
-struct AssetsLoading{
-    assets: Vec<UntypedHandle>,
-    loaded: bool
-}
-
-impl Default for AssetsLoading {
-    fn default() -> Self {
-        AssetsLoading{
-            assets: Vec::with_capacity(2),
-            loaded: false
-        }
-    }
-}
-
-fn setup(asset_server: Res<AssetServer>, mut loading: ResMut<AssetsLoading>) {
-    let map_glb: Handle<Scene> = asset_server.load("map.glb#Scene0");
-    let map_mesh: Handle<Mesh> = asset_server.load("map.glb#Mesh0/Primitive0");
-
-    loading.assets.push(map_glb.clone().untyped());
-    loading.assets.push(map_mesh.clone().untyped());
-}
-
-fn check_assets_ready(
+use crate::{controller::CharacterControllerBundle, Floor};
+pub fn setup_map(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    mut loading: ResMut<AssetsLoading>,
-    assets: Res<Assets<Mesh>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    // let map_glb: Handle<Scene> = asset_server.load("character_controller_demo.glb#Scene0");
+    // let map_mesh: Handle<Mesh> = asset_server.load("map.glb#Mesh0/Primitive0");
 
-    if !loading.loaded{
+    commands.spawn((
+        SceneBundle {
+            scene: asset_server.load("character_controller_demo.glb#Scene0"),
+            transform: Transform::from_rotation(Quat::from_rotation_y(-std::f32::consts::PI * 0.5)),
+            ..default()
+        },
+        AsyncSceneCollider::new(Some(ComputedCollider::ConvexHull)),
+        RigidBody::Static,
+    ));
 
-        match get_load_state(&&asset_server, loading.assets.iter()) {
-            LoadState::Failed => {
-                // one of our assets had an error
-                error!("Failed to load assets!");
-            }
-            LoadState::Loaded => {
-                let actual_mesh = assets
-                    .get(&loading.assets.get(1).unwrap().clone().typed())
-                    .unwrap();
-    
-                let collider =
-                    Collider::from_bevy_mesh(actual_mesh, &ComputedColliderShape::default()).unwrap();
-                commands.spawn((
-                    SceneBundle {
-                        scene: loading.assets.get(0).unwrap().clone().typed(),
-                        transform: Transform::from_xyz(2.0, 0.0, -5.0),
-                        ..Default::default()
-                    },
-                    RigidBody::Fixed,
-                    Floor {},
-                    collider,
-                ));
-                
-                loading.loaded = true;
-                // commands.remove_resource::<AssetsLoading>();
-            }
-            _=> {
-                info!("Not loaded yet!");
-            },
-    
-    
-            // _ => {
-            //     // NotLoaded/Loading: not fully ready yet
-            // }
-        }
-    }
-
-
-}
-
-
-fn get_load_state(asset_server: &Res<AssetServer>, iter: Iter<UntypedHandle>) -> LoadState {
-
-    for handle in iter {
-        match asset_server.get_load_state(handle.id()).unwrap(){
-            LoadState::Loaded => {
-                continue;
-            }, 
-            _ => {
-                return asset_server.get_load_state(handle.id()).unwrap();
-            }
-        }
-    }
-
-    LoadState::Loaded
-
+    // loading.assets.push(map_glb.clone().untyped());
+    // loading.assets.push(map_mesh.clone().untyped());
 }
 
 pub struct MapPlugin;
 
 impl Plugin for MapPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(AssetsLoading::default())
-            .add_systems(Startup, setup)
-            .add_systems(Update, check_assets_ready);
+        app.add_systems(Startup, setup_map);
+        // .add_systems(Update, check_assets_ready);
     }
 }
