@@ -13,5 +13,6 @@ path = "src/main.rs"
 # path = "src/test.rs"
 
 [dependencies]
-bevy = { version = "0.12", features=["jpeg"]} 
-bevy_xpbd_3d = {version = "0.3", features = ["async-collider"]}
+bevy = { version = "0.12", features = ["jpeg"] }
+bevy_xpbd_3d = { version = "0.3", features = ["async-collider"] }
+bevy_mod_raycast = "0.16.0"

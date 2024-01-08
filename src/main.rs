@@ -10,6 +10,7 @@ use bevy::pbr::AmbientLight;
 use bevy::prelude::{
     App, Color, Commands, Component, Input, KeyCode, MouseButton, Query, Res, Resource, With,
 };
+use bevy::gizmos::gizmos::Gizmos;
 
 use bevy::window::{CursorGrabMode, PrimaryWindow, Window};
 use bevy::DefaultPlugins;
@@ -27,6 +28,7 @@ use map::setup_map;
 use projectile::ProjectilePlugin;
 use spells::{CastSpellInit, SpellsPlugin};
 use ui::UIPlugin;
+use bevy_mod_raycast::prelude::*;
 
 pub mod character_controller;
 // pub mod health;
@@ -147,6 +149,7 @@ fn main() {
             UIPlugin,
             SpellsPlugin,
             aoe::AoeTargetingPlugin,
+            DefaultRaycastingPlugin
             // RapierDebugRenderPlugin {
             //     enabled: true,
             //     ..Default::default()
@@ -165,6 +168,7 @@ fn main() {
                 health_system,
                 basic_attack,
                 update_character_transform, // character_direction_system
+                // raycast
             ),
         )
         .run();
@@ -178,6 +182,36 @@ fn setup_graphics(mut commands: Commands) {
         brightness: 1.0,
     });
 }
+
+// fn raycast(cursor_ray: Res<CursorRay>, mut raycast: Raycast, mut gizmos: Gizmos) {
+//     if let Some(cursor_ray) = **cursor_ray {
+        
+//         if let Some((entity, intersection_data)) = raycast.cast_ray(cursor_ray, &Default::default()).first(){
+
+//             intersection_data.position();
+
+                
+//             commands.spawn(
+//                 // ParticleEffectBundle {
+//                 //     effect: ParticleEffect::new(portal),
+//                 //     transform: Transform::IDENTITY,
+//                 //     ..Default::default()
+//                 // },
+//                 PbrBundle {
+//                     mesh: meshes.add(Mesh::from(shape::UVSphere {
+//                         radius: 10.0,
+//                         stacks: 18,
+//                         sectors: 36,
+//                     })),
+//                     material: materials.add(Color::WHITE.into()),
+//                     transform: Transform::from_xyz(global_cursor.x, global_cursor.y, global_cursor.z),
+//                     ..default()
+//                 },
+//             );
+
+//         };
+//     }
+// }
 
 #[derive(Resource, Default)]
 struct InputState {

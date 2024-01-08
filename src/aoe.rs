@@ -1,66 +1,27 @@
 /// Simple AOE PoC
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::{prelude::*, window::PrimaryWindow, input::mouse::MouseMotion};
+use bevy_mod_raycast::{immediate::Raycast, CursorRay};
 
 use crate::{health_bars::PrimaryCamera, Floor};
 
+#[derive(Event)]
+pub struct RayCastEvent {
+    pub point: Vec3,
+}
+
+#[derive(Component)]
+pub struct Pointer;
+
 pub fn aoe_targeting_system(
     buttons: Res<Input<KeyCode>>,
-    camera_q: Query<(&Camera, &GlobalTransform), With<PrimaryCamera>>,
-    plane_q: Query<&GlobalTransform, With<Floor>>,
-    primary_window: Query<&Window, With<PrimaryWindow>>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     if buttons.just_pressed(KeyCode::F) {
-        // get the camera info and transform
-        // assuming there is exactly one main camera entity, so Query::single() is OK
-        let (camera, camera_transform) = camera_q.single();
+        info!("hello!");
 
-        // Ditto for the ground plane's transform
-        let ground_transform = plane_q.single();
-
-        // There is only one primary window, so we can similarly get it from the query:
-        let window = primary_window.single();
-
-        // check if the cursor is inside the window and get its position
-        let Some(cursor_position) = window.cursor_position() else {
-            error!("No cursor position!");
-            // if the cursor is not inside the window, we can't do anything
-            return;
-        };
-
-        // Mathematically, we can represent the ground as an infinite flat plane.
-        // To do that, we need a point (to position the plane) and a normal vector
-        // (the "up" direction, perpendicular to the ground plane).
-
-        // We can get the correct values from the ground entity's GlobalTransform
-        let plane_origin = ground_transform.translation();
-        let plane_normal = ground_transform.up();
-
-        // Ask Bevy to give us a ray pointing from the viewport (screen) into the world
-        let Some(ray) = camera.viewport_to_world(camera_transform, cursor_position) else {
-            // if it was impossible to compute for whatever reason; we can't do anything
-            return;
-        };
-
-        // do a ray-plane intersection test, giving us the distance to the ground
-        let Some(distance) = ray.intersect_plane(plane_origin, plane_normal) else {
-            // If the ray does not intersect the ground
-            // (the camera is not looking towards the ground), we can't do anything
-            return;
-        };
-
-        // use the distance to compute the actual point on the ground in world-space
-        let global_cursor = ray.get_point(distance);
-
-        // to compute the local coordinates, we need the inverse of the plane's transform
-        let inverse_transform_matrix = ground_transform.compute_matrix().inverse();
-        let local_cursor = inverse_transform_matrix.transform_point3(global_cursor);
-
-        // we can discard the Y coordinate, because it should always be zero
-        // (our point is supposed to be on the plane
-        commands.spawn(
+        commands.spawn((
             // ParticleEffectBundle {
             //     effect: ParticleEffect::new(portal),
             //     transform: Transform::IDENTITY,
@@ -72,18 +33,76 @@ pub fn aoe_targeting_system(
                     stacks: 18,
                     sectors: 36,
                 })),
+
                 material: materials.add(Color::WHITE.into()),
-                transform: Transform::from_xyz(local_cursor.x, local_cursor.y, local_cursor.z),
+                transform: Transform::from_xyz(0., 0., 0.),
                 ..default()
             },
-        );
+            Pointer,
+        ));
     }
+}
+
+pub fn targeting_system(
+    cursor_ray: Res<CursorRay>,
+    mut raycast: Raycast,
+    mut pointers: Query<&mut Transform, With<Pointer>>,
+    mut motion_evr: EventReader<MouseMotion>,
+    mut gizmos: Gizmos
+) {
+
+    // for _ in motion_evr.iter() {
+        if let Some(cursor_ray) = **cursor_ray {
+
+            let hits =  raycast.cast_ray(cursor_ray, &Default::default());
+
+         if let Some((i , intersection)) =  hits
+            .iter()
+            .map(|i| i.1.clone())
+            .enumerate()
+            .find(|(i, hit)| *i == 0 as usize)
+            // .map(|(i, hit)| (i == 0, hit)).
+        {
+            // let color = match is_first {
+            //     true => Color::GREEN,
+            //     false => Color::PINK,
+            // };
+            // gizmos.ray(intersection.position(), intersection.normal(), Color::GREEN);
+            gizmos.circle(intersection.position(), -intersection.normal(), 1., Color::GREEN);
+
+            // if    let Ok(mut pointer) = pointers.get_single_mut() {
+            //     // get the camera info and transform
+                
+            //     let position = intersection.position();
+
+            //     if pointer.translation != position {
+            //         pointer.translation = position;
+            //     }
+        
+            // }
+        }
+            // if let Some((entity, intersection_data)) =
+            //     raycast.cast_ray(cursor_ray, &Default::default()).get(index)
+            // {
+            //     let position = intersection_data.position();
+
+
+        
+
+        
+        
+            // };
+            }
+    // }
+
+
+
 }
 
 pub struct AoeTargetingPlugin;
 
 impl Plugin for AoeTargetingPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, aoe_targeting_system);
+        app.add_systems(Update, (aoe_targeting_system, targeting_system));
     }
 }
