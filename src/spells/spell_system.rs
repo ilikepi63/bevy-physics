@@ -113,6 +113,8 @@ fn cast_spell(
         .insert(Damage { amount: 10 })
         .insert(Projectile {
             despawn_after_hit: true,
+            speed: 1.0,
+            direction: character.forward()
         });
 }
 

@@ -2,6 +2,8 @@ use bevy::prelude::*;
 // use bevy_rapier3d::prelude::*;
 use bevy_xpbd_3d::prelude::*;
 
+use crate::Floor;
+
 pub fn setup_map(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -20,6 +22,7 @@ pub fn setup_map(
         },
         AsyncSceneCollider::new(Some(ComputedCollider::TriMesh)),
         RigidBody::Static,
+        Floor{}
     ));
 
     // loading.assets.push(map_glb.clone().untyped());

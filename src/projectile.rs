@@ -8,6 +8,8 @@ use std::cmp::min;
 #[derive(Component)]
 pub struct Projectile {
     pub despawn_after_hit: bool,
+    pub direction: Vec3,
+    pub speed: f32,
 }
 
 pub fn projectile_system(
@@ -41,10 +43,16 @@ pub fn projectile_system(
     }
 }
 
+pub fn projectile_movement_system(mut projectiles: Query<(&mut Transform, &Projectile)>) {
+    for (mut transform, projectile) in projectiles.iter_mut() {
+        transform.translation = transform.translation + projectile.direction * projectile.speed;
+    }
+}
+
 pub struct ProjectilePlugin;
 
 impl Plugin for ProjectilePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, projectile_system);
+        app.add_systems(Update, (projectile_system, projectile_movement_system));
     }
 }

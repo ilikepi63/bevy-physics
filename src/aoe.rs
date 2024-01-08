@@ -25,6 +25,7 @@ pub fn aoe_targeting_system(
 
         // check if the cursor is inside the window and get its position
         let Some(cursor_position) = window.cursor_position() else {
+            error!("No cursor position!");
             // if the cursor is not inside the window, we can't do anything
             return;
         };
@@ -67,12 +68,12 @@ pub fn aoe_targeting_system(
             // },
             PbrBundle {
                 mesh: meshes.add(Mesh::from(shape::UVSphere {
-                    radius: 0.2,
+                    radius: 10.0,
                     stacks: 18,
                     sectors: 36,
                 })),
-                material: materials.add(Color::BLACK.into()),
-                transform: Transform::from_xyz(local_cursor.x, 1.0, local_cursor.z),
+                material: materials.add(Color::WHITE.into()),
+                transform: Transform::from_xyz(local_cursor.x, local_cursor.y, local_cursor.z),
                 ..default()
             },
         );
