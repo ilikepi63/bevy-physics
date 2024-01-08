@@ -11,7 +11,6 @@ fn lifetime_despawn(
     mut entities: Query<(Entity, &mut Lifetime)>,
     time: Res<Time>,
 ) {
-
     for (entity, mut lifetime) in &mut entities {
         lifetime.timer.tick(time.delta());
         if lifetime.timer.just_finished() {
@@ -22,7 +21,7 @@ fn lifetime_despawn(
 
 pub struct LifetimePlugin;
 
-impl Plugin for LifetimePlugin{
+impl Plugin for LifetimePlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, lifetime_despawn);
     }

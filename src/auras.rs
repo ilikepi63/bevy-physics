@@ -3,7 +3,7 @@
 // DoT/HoT
 // Increase damage done/taken
 
-use bevy::{prelude::*, transform::commands, utils::Uuid};
+use bevy::{prelude::*};
 
 use crate::{
     damage::{apply_damage, apply_health},
@@ -53,7 +53,7 @@ pub enum OvertimeUnit {
 
 pub fn apply_overtime(
     entity: Entity,
-    mut commands: &mut Commands,
+    commands: &mut Commands,
     overtime: Overtime,
     applied: &mut Option<Mut<OvertimeComponent>>,
 ) {
@@ -72,7 +72,7 @@ pub fn apply_overtime(
 
 pub fn remove_overtime(
     entity: Entity,
-    mut commands: &mut Commands,
+    commands: &mut Commands,
     overtime: Overtime,
     applied: &mut Option<OvertimeComponent>,
 ) {
@@ -105,7 +105,7 @@ fn overtime_system(
                     apply_damage(&mut commands, entity, overtime.amount, &mut health)
                 }
 
-                overtime.count = overtime.count - 1;
+                overtime.count -= 1;
 
                 // if overtime.count < 1 {
 
@@ -122,10 +122,8 @@ fn overtime_system(
         overtime_comp.applied.retain(|value| value.count > 0);
 
         // remove the buff if there are no overtimes working on the thing
-        if overtime_comp.applied.len() < 1 {
-            commands.get_entity(entity).map(|mut ent| {
-                ent.remove::<OvertimeComponent>();
-            });
+        if overtime_comp.applied.is_empty() {
+            if let Some(mut ent) = commands.get_entity(entity) { ent.remove::<OvertimeComponent>(); }
         };
     }
 }

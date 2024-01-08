@@ -12,7 +12,7 @@ pub struct CastBarInner;
 
 pub fn setup_cast_bar(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    _asset_server: Res<AssetServer>,
     window: Query<&Window>,
 ) {
     let window = window.single();
@@ -78,18 +78,15 @@ pub fn update_cast_bar_visible(
             *cast_bar = Visibility::Visible
         }
     }
-
 }
 
 pub fn update_cast_bar_invisible(
     mut removed: RemovedComponents<Casting>,
     mut cast_bar: Query<&mut Visibility, With<CastBar>>,
 ) {
-
     for _ in removed.iter() {
         for mut cast_bar in &mut cast_bar {
             *cast_bar = Visibility::Hidden
         }
     }
-
 }

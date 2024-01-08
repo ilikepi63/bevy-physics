@@ -34,7 +34,7 @@ use bevy_xpbd_3d::components::Position;
 use std::ops::RangeInclusive;
 
 use crate::character_controller::{CharacterDirection, Player};
-use crate::controller::{CharacterController, JumpImpulse, MovementAcceleration, MovementAction};
+
 
 const LINE_TO_PIXEL_RATIO: f32 = 0.1;
 
@@ -127,12 +127,8 @@ impl OrbitCameraPlugin {
             delta += event.delta;
         }
         for camera in query.iter_mut() {
-            if camera.enabled {
-                if mouse_button_input.pressed(camera.rotate_button)
-                    | mouse_button_input.pressed(camera.pan_button)
-                {
-                    events.send(CameraEvents::Orbit(delta))
-                }
+            if camera.enabled && mouse_button_input.pressed(camera.rotate_button) | mouse_button_input.pressed(camera.pan_button) {
+                events.send(CameraEvents::Orbit(delta))
             }
         }
     }
@@ -204,8 +200,8 @@ impl OrbitCameraPlugin {
 
 /// Responds to [`MovementAction`] events and moves character controllers accordingly.
 pub fn movement(
-    mut query: Query<(&OrbitCamera, &mut Transform), (With<Camera>)>,
-    character_controllers: Query<(&Position), With<Player>>,
+    mut query: Query<(&OrbitCamera, &mut Transform), With<Camera>>,
+    character_controllers: Query<&Position, With<Player>>,
 ) {
     for (camera, mut transform) in query.iter_mut() {
         if camera.enabled {

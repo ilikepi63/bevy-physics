@@ -1,9 +1,9 @@
-mod model;
 mod casting;
-mod spells;
+mod model;
 mod plugin;
+mod spells;
 
-pub use spells::*;
+pub use casting::*;
 pub use model::*;
 pub use plugin::*;
-pub use casting::*;
+pub use spells::*;

@@ -1,5 +1,5 @@
 // use bevy_healu
-use bevy::{prelude::*, transform::commands};
+use bevy::{prelude::*};
 
 #[derive(Component)]
 pub struct Health {
@@ -7,15 +7,10 @@ pub struct Health {
     pub current: u32,
 }
 
-pub fn health_system(
-    mut commands: Commands,
-    entities: Query<(Entity, &Health)>
-) {
-
+pub fn health_system(mut commands: Commands, entities: Query<(Entity, &Health)>) {
     for (entity, health) in entities.iter() {
         if health.current == 0 {
             commands.entity(entity).despawn();
         }
     }
-
 }

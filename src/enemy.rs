@@ -3,9 +3,6 @@ use bevy_xpbd_3d::components::RigidBody;
 
 use crate::{
     health::Health,
-    health_bars::{
-        get_sceen_transform_and_visibility, HealthBarAttach, HealthBarBundle, PrimaryCamera,
-    },
     hit_box::HitBox,
 };
 

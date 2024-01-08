@@ -36,7 +36,6 @@ use bevy::prelude::*;
 use bevy_xpbd_3d::{math::*, prelude::*};
 use controller::*;
 
-
 #[derive(Component)]
 pub struct Floor {}
 
@@ -96,9 +95,9 @@ fn setup(
     ));
 
     // Light
-    commands.insert_resource(AmbientLight{
+    commands.insert_resource(AmbientLight {
         color: Color::WHITE,
-        brightness: 1.0
+        brightness: 1.0,
     });
     // Camera
     commands.spawn(Camera3dBundle {

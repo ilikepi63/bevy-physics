@@ -42,7 +42,7 @@ pub fn setup_tooltip(commands: &mut Commands, asset_server: &Res<AssetServer>) {
         ))
         .with_children(|parent| {
             parent.spawn(TextBundle {
-                style: Style { 
+                style: Style {
                     flex_wrap: FlexWrap::Wrap,
                     ..Default::default()
                 },
@@ -68,12 +68,11 @@ pub fn setup_tooltip(commands: &mut Commands, asset_server: &Res<AssetServer>) {
                             font: asset_server.load("Rosela.ttf"),
                             font_size: 12.0,
                             color: Color::WHITE,
-                            
                         },
                     }],
                     ..Default::default()
                 },
-                style: Style{
+                style: Style {
                     max_width: Val::Px(200.0),
                     ..Default::default()
                 },
@@ -88,7 +87,7 @@ pub fn tooltip_events(
     mut text_query: Query<&mut Text>,
 ) {
     for event in tooltip.iter() {
-        for (mut visibility, style, mut children) in &mut ui_tooltip {
+        for (mut visibility, _style, children) in &mut ui_tooltip {
             if event.shown {
                 *visibility = Visibility::Visible;
 

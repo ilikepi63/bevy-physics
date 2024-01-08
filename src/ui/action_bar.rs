@@ -2,7 +2,12 @@ use bevy::prelude::*;
 
 use super::{tooltip::ShowsTooltip, BUTTON_SIZE};
 
-fn spawn_action_bar_button(parent: &mut ChildBuilder, button: &str, tooltip: ShowsTooltip, asset_server: &Res<AssetServer>) {
+fn spawn_action_bar_button(
+    parent: &mut ChildBuilder,
+    button: &str,
+    tooltip: ShowsTooltip,
+    asset_server: &Res<AssetServer>,
+) {
     parent
         .spawn((
             NodeBundle {

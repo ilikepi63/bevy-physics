@@ -7,10 +7,10 @@ use bevy_xpbd_3d::{
 };
 
 use crate::{
-    controller::{CharacterControllerBundle, ControllerGravity, CharacterController},
+    controller::{CharacterControllerBundle},
     health::Health,
     health_bars::PrimaryCamera,
-    orbit_camera::{self, OrbitCamera},
+    orbit_camera::{self},
 };
 
 // use crate::{interaction_flags, resource};
@@ -21,9 +21,9 @@ use crate::{
 pub struct Player;
 
 #[derive(Debug, Component)]
-pub struct CharacterDirection{
-    pub forward: Vec3, 
-    pub right: Vec3
+pub struct CharacterDirection {
+    pub forward: Vec3,
+    pub right: Vec3,
 }
 
 #[derive(Component)]
@@ -33,7 +33,7 @@ pub fn create_character_controller(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    asset_server: Res<AssetServer>,
+    _asset_server: Res<AssetServer>,
 ) {
     let transform = Transform::from_xyz(-2.0, 1.5, 5.0).looking_at(
         Vec3 {
@@ -44,7 +44,7 @@ pub fn create_character_controller(
         Vec3::Y,
     );
 
-    let camera_transform = transform.clone().looking_at(
+    let camera_transform = transform.looking_at(
         Vec3 {
             x: 0.0,
             y: 1.0,
@@ -76,7 +76,7 @@ pub fn create_character_controller(
     //     // Velocity::zero(), // RigidBodyBuilder::dynamic().lock_rotations().build(),
     // ));
 
-    let transform =  Transform::from_xyz(0.0, 1.5, 0.0);
+    let transform = Transform::from_xyz(0.0, 1.5, 0.0);
 
     let character_translation = CharacterTranslation(transform.translation);
 
@@ -99,15 +99,22 @@ pub fn create_character_controller(
         Player {},
         CharacterControllerBundle::new(Collider::capsule(1.0, 0.4), Vector::NEG_Y * 9.81 * 2.0)
             .with_movement(100.0, 0.92, 7.0, (30.0 as Scalar).to_radians()),
-        CharacterDirection{
-            forward: Vec3 { x: 1.0, y: 0.0, z: 0.0 },
-            right: Vec3 { x: 1.0, y: 0.0, z: 0.0 }
+        CharacterDirection {
+            forward: Vec3 {
+                x: 1.0,
+                y: 0.0,
+                z: 0.0,
+            },
+            right: Vec3 {
+                x: 1.0,
+                y: 0.0,
+                z: 0.0,
+            },
         },
-        character_translation
-        // Collider::ball(1.0),
-        // RigidBody::Dynamic,
-        // GravityScale(1.0),
-        // Velocity::zero(), // RigidBodyBuilder::dynamic().lock_rotations().build(),
+        character_translation, // Collider::ball(1.0),
+                               // RigidBody::Dynamic,
+                               // GravityScale(1.0),
+                               // Velocity::zero(), // RigidBodyBuilder::dynamic().lock_rotations().build(),
     ));
 
     commands

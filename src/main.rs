@@ -1,44 +1,43 @@
-use std::cmp::min;
-use std::f32::consts::PI;
-use std::process::Command;
+
+
+
 use std::time::Duration;
 
-use auras::{apply_overtime, AurasPlugin, Overtime, OvertimeComponent};
+use auras::{AurasPlugin};
 use bevy::app::{Startup, Update};
 use bevy::ecs::event::{EventWriter, ManualEventReader};
-use bevy::ecs::query::Without;
-use bevy::ecs::schedule::{Schedule, ScheduleLabel};
+
+
 use bevy::input::mouse::MouseMotion;
-use bevy::log::info;
-use bevy::pbr::{AmbientLight, CascadeShadowConfigBuilder};
+
+use bevy::pbr::{AmbientLight};
 use bevy::prelude::{
-    default, shape, App, Assets, Color, Commands, Component, DirectionalLightBundle, Entity,
-    EventReader, Input, KeyCode, Mesh, MouseButton, Name, PbrBundle, Quat, Query, Res, ResMut,
-    Resource, StandardMaterial, Transform, Vec3, With,
+    App, Color, Commands, Component, Input, KeyCode, MouseButton, Query, Res,
+    Resource, With,
 };
-use bevy::render::camera::Camera;
-use bevy::text::{TextAlignment, TextStyle};
-use bevy::time::{Timer, TimerMode};
-use bevy::transform::components::GlobalTransform;
-use bevy::ui::node_bundles::TextBundle;
-use bevy::ui::{PositionType, Style, UiRect, Val};
+
+
+
+
+
+
 use bevy::window::{CursorGrabMode, PrimaryWindow, Window};
 use bevy::DefaultPlugins;
 // use bevy_inspector_egui::egui::Key;
-use bevy::asset::{AssetServer, Handle, LoadState};
-use bevy::scene::SceneBundle;
+
+
 
 use bevy_xpbd_3d::plugins::{PhysicsDebugPlugin, PhysicsPlugins};
 use character_controller::{create_character_controller, update_character_transform};
-use damage::Damage;
-use damage_text::{spawn_damage_text_on_entity, AppliedDamage, DamageTextPlugin};
+
+use damage_text::{DamageTextPlugin};
 use enemy::EnemyPlugin;
-use health::{health_system, Health};
-use health_bars::{HealthBar, HealthBarPlugin};
-use lifetime::{Lifetime, LifetimePlugin};
-use map::{MapPlugin, setup_map};
-use projectile::{Projectile, ProjectilePlugin};
-use spells::{CastSpellFire, CastSpellInit, SpellsPlugin};
+use health::{health_system};
+use health_bars::{HealthBarPlugin};
+use lifetime::{LifetimePlugin};
+use map::{setup_map};
+use projectile::{ProjectilePlugin};
+use spells::{CastSpellInit, SpellsPlugin};
 use ui::UIPlugin;
 
 pub mod character_controller;
@@ -147,7 +146,6 @@ fn main() {
             PhysicsPlugins::default(),
             controller::CharacterControllerPlugin,
             // RapierPhysicsPlugin::<NoUserData>::default(),
-
             PhysicsDebugPlugin::default(),
             // MapPlugin,
             orbit_camera::OrbitCameraPlugin,
@@ -165,7 +163,10 @@ fn main() {
             //     ..Default::default()
             // }
         ))
-        .add_systems(Startup, (setup_map, setup_graphics, create_character_controller))
+        .add_systems(
+            Startup,
+            (setup_map, setup_graphics, create_character_controller),
+        )
         // .add_startup_system(setup_world)
         .add_systems(
             Update,
@@ -174,8 +175,7 @@ fn main() {
                 on_mouse_shoot,
                 health_system,
                 basic_attack,
-                update_character_transform
-                // character_direction_system
+                update_character_transform, // character_direction_system
             ),
         )
         .run();

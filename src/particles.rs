@@ -1,7 +1,6 @@
 // use bevy::prelude::*;
 // use bevy_hanabi::prelude::*;
 
-
 // pub fn make_particle(commands: &mut Commands, effects: &mut ResMut<Assets<EffectAsset>>) -> Handle<EffectAsset> {
 //     let mut color_gradient1 = Gradient::new();
 //     color_gradient1.add_key(0.0, Vec4::new(4.0, 4.0, 4.0, 1.0));
@@ -41,6 +40,5 @@
 //         })
 //         .render(OrientAlongVelocityModifier),
 //     )
-
 
 // }

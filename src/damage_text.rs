@@ -1,4 +1,4 @@
-use bevy::{prelude::*, transform};
+use bevy::{prelude::*};
 
 use crate::{
     health_bars::{
@@ -40,7 +40,14 @@ pub struct DamageTextPlugin;
 impl Plugin for DamageTextPlugin {
     fn build(&self, app: &mut App) {
         // app.add_system(add_damage_text_to_entites_with_applied_damage);
-        app.add_systems(Update, (spawn_damage_text_children, update_damage_text, lifetime_despawn));
+        app.add_systems(
+            Update,
+            (
+                spawn_damage_text_children,
+                update_damage_text,
+                lifetime_despawn,
+            ),
+        );
     }
 }
 
@@ -58,14 +65,14 @@ fn update_damage_text(
         // Without<AppliedDamage>,
     >,
     asset_server: Res<AssetServer>,
-    entites: Query<(&Transform)>,
+    entites: Query<&Transform>,
     camera_q: Query<(&Camera, &GlobalTransform), With<PrimaryCamera>>,
-    orbit_camera: Query<(&OrbitCamera)>,
+    orbit_camera: Query<&OrbitCamera>,
 ) {
     for (_hb_entity, mut hb_text, mut hb_style, hb_attach, mut hb_visibility, lifetime, text) in
         healthbars.iter_mut()
     {
-        if let Ok((e_transform)) = entites.get(hb_attach.attached_to) {
+        if let Ok(e_transform) = entites.get(hb_attach.attached_to) {
             let (x, y) = get_sceen_transform_and_visibility(&camera_q, e_transform, &orbit_camera);
 
             *hb_visibility = Visibility::Visible;
@@ -82,7 +89,7 @@ fn update_damage_text(
             if remaining_ms > 2000 {
                 hb_style.top = Val::Percent(100.0 - y);
             } else {
-                let remaining_ms_in_f32 = (remaining_ms as f32 / 2000.0);
+                let remaining_ms_in_f32 = remaining_ms as f32 / 2000.0;
 
                 hb_style.top = Val::Percent((100.0 - y) - (5.0 * remaining_ms_in_f32));
             }
@@ -114,10 +121,9 @@ fn spawn_damage_text_children(
     asset_server: Res<AssetServer>,
     entities: Query<(Entity, &AppliedDamage, &Transform), Added<AppliedDamage>>,
     camera_q: Query<(&Camera, &GlobalTransform), With<PrimaryCamera>>,
-    orbit_camera: Query<(&OrbitCamera)>,
+    orbit_camera: Query<&OrbitCamera>,
 ) {
     for (entity, health, transform) in entities.iter() {
-
         let current = health.value;
         // let max = health.max();
         let bartrans = get_sceen_transform_and_visibility(&camera_q, transform, &orbit_camera);
@@ -137,9 +143,7 @@ fn spawn_damage_text_children(
                         style: Style {
                             position_type: PositionType::Absolute,
                             left: Val::Percent(convert_ndc_to_percentage_values(bartrans.0)),
-                            top: Val::Percent(convert_ndc_to_percentage_values(
-                                100.0 - bartrans.1,
-                            )),
+                            top: Val::Percent(convert_ndc_to_percentage_values(100.0 - bartrans.1)),
                             ..Default::default()
                         },
                         text: Text {

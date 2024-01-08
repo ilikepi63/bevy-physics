@@ -1,6 +1,6 @@
+use crate::{character_controller::CharacterDirection};
 use bevy::{ecs::query::Has, prelude::*};
 use bevy_xpbd_3d::{math::*, prelude::*, SubstepSchedule, SubstepSet};
-use crate::{orbit_camera::OrbitCamera, character_controller::CharacterDirection};
 pub struct CharacterControllerPlugin;
 
 impl Plugin for CharacterControllerPlugin {
@@ -145,7 +145,7 @@ impl CharacterControllerBundle {
 fn keyboard_input(
     mut movement_event_writer: EventWriter<MovementAction>,
     keyboard_input: Res<Input<KeyCode>>,
-    character_query: Query<&CharacterDirection>
+    character_query: Query<&CharacterDirection>,
 ) {
     let up = keyboard_input.any_pressed([KeyCode::W, KeyCode::Up]);
     let down = keyboard_input.any_pressed([KeyCode::S, KeyCode::Down]);
@@ -159,7 +159,7 @@ fn keyboard_input(
     let horizontal = (right as i8 as f32 * char_right) - (left as i8 as f32 * char_right);
     let vertical = (up as i8 as f32 * char_forward) - (down as i8 as f32 * char_forward);
 
-    let movement = (horizontal + vertical);
+    let movement = horizontal + vertical;
 
     // let direction = match (up, down, left, right) {
     //     (true, ..) => Vec2{x: char_forward.x, y: char_forward.z},
@@ -169,8 +169,8 @@ fn keyboard_input(
     //     _ => Vec2::ZERO
     // };
 
-
-    let direction = Vector2::new((movement.x as Scalar), movement.z as Scalar).clamp_length_max(1.0);
+    let direction =
+        Vector2::new(movement.x as Scalar, movement.z as Scalar).clamp_length_max(1.0);
 
     if direction != Vector2::ZERO {
         movement_event_writer.send(MovementAction::Move(direction));

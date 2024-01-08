@@ -1,18 +1,16 @@
-use std::slice::Iter;
 
-use bevy::{asset::LoadState, prelude::*};
+
+use bevy::{prelude::*};
 // use bevy_rapier3d::prelude::*;
 use bevy_xpbd_3d::{
-    math::{Scalar, Vector},
     prelude::*,
 };
-
 
 pub fn setup_map(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
+    _meshes: ResMut<Assets<Mesh>>,
+    _materials: ResMut<Assets<StandardMaterial>>,
 ) {
     // let map_glb: Handle<Scene> = asset_server.load("character_controller_demo.glb#Scene0");
     // let map_mesh: Handle<Mesh> = asset_server.load("map.glb#Mesh0/Primitive0");

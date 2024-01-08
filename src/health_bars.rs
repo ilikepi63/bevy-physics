@@ -1,7 +1,6 @@
-use bevy::{prelude::*, transform};
+use bevy::{prelude::*};
 
 use crate::{health::Health, orbit_camera::OrbitCamera};
-
 
 impl HealthTrait for Health {
     fn current(&self) -> u32 {
@@ -54,11 +53,15 @@ pub struct HealthBarPlugin;
 
 impl Plugin for HealthBarPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (add_healthbars_to_entites_with_health,
-            spawn_health_bar_children,
-            update_healthbars,
-            despawn_unattached_healthbars
-        ));
+        app.add_systems(
+            Update,
+            (
+                add_healthbars_to_entites_with_health,
+                spawn_health_bar_children,
+                update_healthbars,
+                despawn_unattached_healthbars,
+            ),
+        );
     }
 }
 
@@ -80,7 +83,7 @@ fn despawn_unattached_healthbars(
 ) {
     for (hb_entity, attach) in healthbars.iter() {
         // despawn the healthbar
-        if let Err(_) = entites.get(attach.attached_to) {
+        if entites.get(attach.attached_to).is_err() {
             if let Some(ec) = commands.get_entity(hb_entity) {
                 ec.despawn_recursive()
             }
@@ -103,18 +106,20 @@ fn update_healthbars(
     asset_server: Res<AssetServer>,
     entites: Query<(&Health, &Transform, &HealthBar)>,
     camera_q: Query<(&Camera, &GlobalTransform), With<PrimaryCamera>>,
-    orbit_camera: Query<(&OrbitCamera)>
+    orbit_camera: Query<&OrbitCamera>,
 ) {
-    for (_hb_entity, mut hb_text, mut hb_style, mut hb_transform, hb_attach, mut hb_visibility) in
+    for (_hb_entity, mut hb_text, mut hb_style, _hb_transform, hb_attach, mut hb_visibility) in
         healthbars.iter_mut()
     {
         if let Ok((e_health, e_transform, e_bar)) = entites.get(hb_attach.attached_to) {
-            let (x,y) = get_sceen_transform_and_visibility(&camera_q, e_transform, &orbit_camera);
+            let (x, y) = get_sceen_transform_and_visibility(&camera_q, e_transform, &orbit_camera);
             // *hb_transform = bartrans;
             *hb_visibility = Visibility::Visible;
 
-
-            let (x, y) = (convert_ndc_to_percentage_values(x), convert_ndc_to_percentage_values(y));
+            let (x, y) = (
+                convert_ndc_to_percentage_values(x),
+                convert_ndc_to_percentage_values(y),
+            );
 
             hb_style.left = Val::Percent(x - 1.0);
             hb_style.top = Val::Percent(100.0 - y - 6.0);
@@ -123,7 +128,6 @@ fn update_healthbars(
             // if bartrans.1 < 359.0 || bartrans.1 > 361.0 {
             //     hb_style.position.bottom = Val::Px(bartrans.1);
             // }
-
 
             let current = e_health.current();
             let max = e_health.max();
@@ -151,9 +155,9 @@ fn spawn_health_bar_children(
     asset_server: Res<AssetServer>,
     entities: Query<(Entity, &Health, &Transform, &HealthBar), Added<HealthBar>>,
     camera_q: Query<(&Camera, &GlobalTransform), With<PrimaryCamera>>,
-    orbit_camera: Query<(&OrbitCamera)>
+    orbit_camera: Query<&OrbitCamera>,
 ) {
-    for (entity, health, transform, hbar) in entities.iter() {
+    for (entity, health, transform, _hbar) in entities.iter() {
         let current = health.current();
         let max = health.max();
         let bartrans = get_sceen_transform_and_visibility(&camera_q, transform, &orbit_camera);
@@ -198,17 +202,17 @@ fn spawn_health_bar_children(
 pub fn get_sceen_transform_and_visibility(
     camera_q: &Query<(&Camera, &GlobalTransform), With<PrimaryCamera>>,
     transform: &Transform,
-    orbit_camera: &Query<(&OrbitCamera)>
+    _orbit_camera: &Query<&OrbitCamera>,
 ) -> (f32, f32) {
     let (camera, cam_gt) = camera_q.single();
     let pos = camera.world_to_ndc(cam_gt, transform.translation);
 
-    // let (max_x, max_y) = 
+    // let (max_x, max_y) =
 
     if let Some(pos) = pos {
         // let orbit_rotation = orbit_camera.single().x;
 
-        if (pos.x > 0.1 || pos.x < -0.1) && (pos.y > 0.1 || pos.y < 0.1) {
+        if (pos.x > 0.1 || pos.x < -0.1) && pos.y != 0.1 {
             // info!("X: {}, Y: {}", pos.x, pos.y);
         }
 
@@ -218,14 +222,11 @@ pub fn get_sceen_transform_and_visibility(
     }
 }
 
-
 /// Coerce (x,y) from (-1, 1) range to (0, 100) range.
 pub fn convert_ndc_to_percentage_values(val: f32) -> f32 {
-
     let absolute_val = val + 1.0;
 
     // val / 2 = x / 100
 
-    absolute_val / 2.0  * 100.0
-
-} 
+    absolute_val / 2.0 * 100.0
+}

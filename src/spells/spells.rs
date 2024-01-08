@@ -1,6 +1,6 @@
 use std::{cmp::min, time::Duration};
 
-use bevy::{prelude::*, utils::Uuid};
+use bevy::{prelude::*};
 // use bevy_hanabi::{EffectAsset, ParticleEffect, ParticleEffectBundle};
 
 use crate::{
@@ -65,11 +65,11 @@ pub fn spell_system(
         match event.id.as_str() {
             "s" => {
                 let character = character_query.single();
-                cast_spell(&character, &mut commands, &mut meshes, &mut materials)
+                cast_spell(character, &mut commands, &mut meshes, &mut materials)
             }
             "a" => {
                 let character = character_query.single();
-                basic_attack(&character, &mut commands, &mut other_entities)
+                basic_attack(character, &mut commands, &mut other_entities)
             }
             _ => {}
         }
@@ -83,7 +83,7 @@ fn cast_spell(
     materials: &mut ResMut<Assets<StandardMaterial>>,
     // effects: &mut ResMut<Assets<EffectAsset>>
 ) {
-    let direction = character.forward();
+    let _direction = character.forward();
 
     // let portal = make_particle(commands, effects);
 

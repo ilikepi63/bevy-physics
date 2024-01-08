@@ -3,7 +3,7 @@ use std::time::Duration;
 
 use crate::character_controller::Player;
 
-use super::{model::CastSpellInit, CastSpellFire};
+use super::{CastSpellFire};
 
 #[derive(Component)]
 pub struct Casting {
@@ -22,8 +22,7 @@ pub fn casting_system(
     mut commands: Commands,
 ) {
     for (entity, mut casting) in &mut caster_query {
-
-        (*casting).current_duration = time.delta() + casting.current_duration;
+        casting.current_duration = time.delta() + casting.current_duration;
 
         if casting.current_duration > casting.total_duration {
             cast_spell_fire_events.send(CastSpellFire {
