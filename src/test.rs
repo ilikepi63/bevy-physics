@@ -12,12 +12,33 @@
 //!
 //! For a dynamic character controller, see the `dynamic_character_3d` example.
 
+pub mod character_controller;
+// pub mod health;
+mod aoe;
+mod auras;
 mod controller;
+mod damage;
+mod damage_text;
+pub mod enemy;
+mod health;
+pub mod health_bars;
+pub mod hit_box;
+mod lifetime;
+mod map;
 pub mod orbit_camera;
+mod particles;
+pub mod projectile;
+mod spells;
+mod ui;
+pub mod utils;
 
 use bevy::prelude::*;
 use bevy_xpbd_3d::{math::*, prelude::*};
 use controller::*;
+
+
+#[derive(Component)]
+pub struct Floor {}
 
 fn main() {
     App::new()

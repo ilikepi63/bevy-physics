@@ -11,7 +11,6 @@ use crate::{
     health::Health,
     health_bars::PrimaryCamera,
     orbit_camera::{self, OrbitCamera},
-    MovementResource,
 };
 
 // use crate::{interaction_flags, resource};
@@ -20,6 +19,15 @@ use crate::{
 
 #[derive(Debug, Component)]
 pub struct Player;
+
+#[derive(Debug, Component)]
+pub struct CharacterDirection{
+    pub forward: Vec3, 
+    pub right: Vec3
+}
+
+#[derive(Component)]
+pub struct CharacterTranslation(pub Vec3);
 
 pub fn create_character_controller(
     mut commands: Commands,
@@ -68,6 +76,10 @@ pub fn create_character_controller(
     //     // Velocity::zero(), // RigidBodyBuilder::dynamic().lock_rotations().build(),
     // ));
 
+    let transform =  Transform::from_xyz(0.0, 1.5, 0.0);
+
+    let character_translation = CharacterTranslation(transform.translation);
+
     commands.spawn((
         // Transform::default(),
         // GlobalTransform::default(),
@@ -77,7 +89,7 @@ pub fn create_character_controller(
                 ..default()
             })),
             material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-            transform: Transform::from_xyz(0.0, 1.5, 0.0),
+            transform,
             ..default()
         },
         Health {
@@ -86,7 +98,12 @@ pub fn create_character_controller(
         },
         Player {},
         CharacterControllerBundle::new(Collider::capsule(1.0, 0.4), Vector::NEG_Y * 9.81 * 2.0)
-            .with_movement(30.0, 0.92, 7.0, (30.0 as Scalar).to_radians()),
+            .with_movement(100.0, 0.92, 7.0, (30.0 as Scalar).to_radians()),
+        CharacterDirection{
+            forward: Vec3 { x: 1.0, y: 0.0, z: 0.0 },
+            right: Vec3 { x: 1.0, y: 0.0, z: 0.0 }
+        },
+        character_translation
         // Collider::ball(1.0),
         // RigidBody::Dynamic,
         // GravityScale(1.0),
@@ -104,21 +121,6 @@ pub fn create_character_controller(
         })
         .insert(UiCameraConfig { show_ui: true })
         .insert(PrimaryCamera);
-}
-
-pub fn character_direction_system(
-    camera_query: Query<(&Transform, &Camera), (With<Camera3d>, Changed<OrbitCamera>)>,
-    mut character: Query<&mut Transform, With<CharacterController>>,
-) {
-    let (transform, _) = camera_query.single();
-
-    // let camera_direction = transform.forward();
-
-    let mut character = character.single_mut();
-
-    let forward = Vec3::from_array([transform.forward().x, 0.0, transform.forward().z]);
-
-    character.look_to(forward, Vec3::Y);
 }
 
 // pub fn character_controller_system(
@@ -206,14 +208,10 @@ pub fn character_direction_system(
 //     }
 // }
 
-// Define a player movement system
-// pub fn player_jumps(
-//     keyboard_input: Res<Input<KeyCode>>,
-//     mut players: Query<(&Player), With<Player>>,
-// ) {
-//     // for (_, mut velocity) in players.iter_mut() {
-//     //     if keyboard_input.pressed(KeyCode::Space) {
-//     //         velocity.linvel = Vec3::new(0., 1., 0.).into();
-//     //     }
-//     // }
-// }
+pub fn update_character_transform(
+    mut character_direction: Query<(&mut Transform, &CharacterDirection)>,
+) {
+    for (mut transform, direction) in character_direction.iter_mut() {
+        transform.look_to(direction.forward, Vec3::Y);
+    }
+}

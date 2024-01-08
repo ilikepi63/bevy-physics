@@ -7,7 +7,7 @@ use bevy_xpbd_3d::{
     prelude::*,
 };
 
-use crate::{controller::CharacterControllerBundle, Floor};
+
 pub fn setup_map(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -19,11 +19,12 @@ pub fn setup_map(
 
     commands.spawn((
         SceneBundle {
-            scene: asset_server.load("character_controller_demo.glb#Scene0"),
-            transform: Transform::from_rotation(Quat::from_rotation_y(-std::f32::consts::PI * 0.5)),
+            // scene: asset_server.load("character_controller_demo.glb#Scene0"),
+            scene: asset_server.load("map.glb#Scene0"),
+            // transform: Transform::from_rotation(Quat::from_rotation_y(-std::f32::consts::PI * 0.5)),
             ..default()
         },
-        AsyncSceneCollider::new(Some(ComputedCollider::ConvexHull)),
+        AsyncSceneCollider::new(Some(ComputedCollider::TriMesh)),
         RigidBody::Static,
     ));
 

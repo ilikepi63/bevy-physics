@@ -29,7 +29,7 @@ use bevy::asset::{AssetServer, Handle, LoadState};
 use bevy::scene::SceneBundle;
 
 use bevy_xpbd_3d::plugins::{PhysicsDebugPlugin, PhysicsPlugins};
-use character_controller::{create_character_controller, character_direction_system};
+use character_controller::{create_character_controller, update_character_transform};
 use damage::Damage;
 use damage_text::{spawn_damage_text_on_entity, AppliedDamage, DamageTextPlugin};
 use enemy::EnemyPlugin;
@@ -148,7 +148,7 @@ fn main() {
             controller::CharacterControllerPlugin,
             // RapierPhysicsPlugin::<NoUserData>::default(),
 
-            // PhysicsDebugPlugin::default(),
+            PhysicsDebugPlugin::default(),
             // MapPlugin,
             orbit_camera::OrbitCameraPlugin,
             EnemyPlugin,
@@ -174,6 +174,7 @@ fn main() {
                 on_mouse_shoot,
                 health_system,
                 basic_attack,
+                update_character_transform
                 // character_direction_system
             ),
         )

@@ -44,33 +44,6 @@ impl Plugin for DamageTextPlugin {
     }
 }
 
-// fn add_damage_text_to_entites_with_applied_damage(
-//     mut commands: Commands,
-//     entities: Query<(Entity, &AppliedDamage), (Without<DamageText>)>,
-// ) {
-//     for (entity, ap) in entities.iter() {
-//         if let Some(mut ec) = commands.get_entity(entity) {
-//             ec.insert(DamageText { value:  });
-//         }
-//     }
-// }
-
-// we despawn after a timer
-// fn despawn_unattached_healthbars(
-//     mut commands: Commands,
-//     healthbars: Query<(Entity, &HealthBarAttach), Without<HealthBar>>,
-//     entites: Query<(&Health, &Transform), With<HealthBar>>,
-// ) {
-//     for (hb_entity, attach) in healthbars.iter() {
-//         // despawn the healthbar
-//         if let Err(_) = entites.get(attach.attached_to) {
-//             if let Some(ec) = commands.get_entity(hb_entity) {
-//                 ec.despawn_recursive()
-//             }
-//         }
-//     }
-// }
-
 fn update_damage_text(
     mut healthbars: Query<
         (

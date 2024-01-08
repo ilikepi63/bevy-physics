@@ -30,9 +30,11 @@ use bevy::input::mouse::MouseScrollUnit::{Line, Pixel};
 use bevy::input::mouse::MouseWheel;
 use bevy::prelude::*;
 use bevy::render::camera::Camera;
+use bevy_xpbd_3d::components::Position;
 use std::ops::RangeInclusive;
 
-use crate::controller::{MovementAction, MovementAcceleration, JumpImpulse, CharacterController};
+use crate::character_controller::{CharacterDirection, Player};
+use crate::controller::{CharacterController, JumpImpulse, MovementAcceleration, MovementAction};
 
 const LINE_TO_PIXEL_RATIO: f32 = 0.1;
 
@@ -91,16 +93,25 @@ impl OrbitCamera {
 pub struct OrbitCameraPlugin;
 impl OrbitCameraPlugin {
     pub fn update_transform_system(
-        mut query: Query<(&mut OrbitCamera, &mut Transform), (Changed<OrbitCamera>, With<Camera>)>,
+        mut query: Query<(&mut OrbitCamera, &Transform), (Changed<OrbitCamera>, With<Camera>)>,
+        mut character_direction: Query<&mut CharacterDirection>,
     ) {
-        for (mut camera, mut transform) in query.iter_mut() {
+        for (mut camera, transform) in query.iter_mut() {
             if camera.enabled {
-                let rot = Quat::from_axis_angle(Vec3::Y, camera.x)
-                    * Quat::from_axis_angle(-Vec3::X, camera.y);
-                transform.translation = (rot * Vec3::Y) * camera.distance + camera.center;
-                transform.look_at(camera.center, Vec3::Y);
+                let mut character_direction = character_direction.single_mut();
 
                 camera.direction = transform.forward();
+
+                character_direction.forward = Vec3 {
+                    x: camera.direction.x,
+                    z: camera.direction.z,
+                    y: 0.0,
+                };
+                character_direction.right = Vec3 {
+                    x: transform.right().x,
+                    z: transform.right().z,
+                    y: 0.0,
+                };
             }
         }
     }
@@ -192,14 +203,25 @@ impl OrbitCameraPlugin {
 }
 
 /// Responds to [`MovementAction`] events and moves character controllers accordingly.
-fn movement(
-    mut _movement_event_reader: EventReader<MovementAction>,
-    mut controllers: Query<&Transform, With<CharacterController>>,
-    mut camera: Query<&mut OrbitCamera>
+pub fn movement(
+    mut query: Query<(&OrbitCamera, &mut Transform), (With<Camera>)>,
+    character_controllers: Query<(&Position), With<Player>>,
 ) {
-    // Precision is adjusted so that the example works with
-    // both the `f32` and `f64` features. Otherwise you don't need this
-    camera.single_mut().center = controllers.single().translation;
+    for (camera, mut transform) in query.iter_mut() {
+        if camera.enabled {
+            let rot = Quat::from_axis_angle(Vec3::Y, camera.x)
+                * Quat::from_axis_angle(-Vec3::X, camera.y);
+
+            let center = if let Ok(center) = character_controllers.get_single() {
+                center.0
+            } else {
+                camera.center
+            };
+
+            transform.translation = (rot * Vec3::Y) * camera.distance + center;
+            transform.look_at(center, Vec3::Y);
+        }
+    }
 }
 
 impl Plugin for OrbitCameraPlugin {
@@ -212,7 +234,7 @@ impl Plugin for OrbitCameraPlugin {
                 Self::emit_zoom_events,
                 Self::zoom_system,
                 Self::update_transform_system,
-                movement
+                movement,
             ),
         )
         .add_event::<CameraEvents>();
