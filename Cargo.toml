@@ -8,9 +8,9 @@ name = "main"
 default = true
 path = "src/main.rs"
 
-[[bin]]
-name = "test"
-path = "src/test.rs"
+# [[bin]]
+# name = "test"
+# path = "src/test.rs"
 
 [dependencies]
 bevy = { version = "0.12", features=["jpeg"]} 

@@ -1,7 +1,6 @@
 use std::{cmp::min, time::Duration};
 
-use bevy::{prelude::*};
-// use bevy_hanabi::{EffectAsset, ParticleEffect, ParticleEffectBundle};
+use bevy::prelude::*;
 
 use crate::{
     auras::{apply_overtime, Overtime, OvertimeComponent},
@@ -16,8 +15,6 @@ use crate::{
 
 use super::{casting::Casting, model::CastSpellFire, CastSpellInit, CastTime};
 
-static SPELL_UUID: &str = "s";
-static MELEE_UUID: &str = "a";
 
 pub fn spell_init_system(
     mut cast_spell_init_events: EventReader<CastSpellInit>,

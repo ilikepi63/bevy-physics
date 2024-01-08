@@ -84,7 +84,7 @@ pub fn update_cast_bar_invisible(
     mut removed: RemovedComponents<Casting>,
     mut cast_bar: Query<&mut Visibility, With<CastBar>>,
 ) {
-    for _ in removed.iter() {
+    for _ in removed.read() {
         for mut cast_bar in &mut cast_bar {
             *cast_bar = Visibility::Hidden
         }

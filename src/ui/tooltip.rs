@@ -86,23 +86,17 @@ pub fn tooltip_events(
     mut ui_tooltip: Query<(&mut Visibility, &mut Style, &mut Children), With<Tooltip>>,
     mut text_query: Query<&mut Text>,
 ) {
-    for event in tooltip.iter() {
+    for event in tooltip.read() {
         for (mut visibility, _style, children) in &mut ui_tooltip {
             if event.shown {
                 *visibility = Visibility::Visible;
 
-                text_query
-                    .get_mut(children[0])
-                    .unwrap()
-                    .sections
-                    .get_mut(0)
-                    .map(|val| val.value = event.title.clone()); // TODO: remove this allocation
-                text_query
-                    .get_mut(children[1])
-                    .unwrap()
-                    .sections
-                    .get_mut(0)
-                    .map(|val| val.value = event.description.clone()); // TODO: remove this allocation
+                if let Some(val) = text_query.get_mut(children[0]).unwrap().sections.get_mut(0) {
+                    val.value = event.title.clone()
+                } // TODO: remove this allocation
+                if let Some(val) = text_query.get_mut(children[1]).unwrap().sections.get_mut(0) {
+                    val.value = event.description.clone()
+                }; //TODO: remove this allocation
             } else {
                 *visibility = Visibility::Hidden;
             }
@@ -137,9 +131,7 @@ pub fn mouseover_system(
                     shown: false,
                 });
             }
-            _ => {
-                // info!("Doing something else! {:#?}", interaction);
-            }
+            _ => {}
         }
     }
 }

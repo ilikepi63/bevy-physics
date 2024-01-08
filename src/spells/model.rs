@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use bevy::{ecs::event::Event};
+use bevy::ecs::event::Event;
 
 use crate::auras::Aura;
 

@@ -1,4 +1,4 @@
-use crate::{character_controller::CharacterDirection};
+use crate::character_controller::CharacterDirection;
 use bevy::{ecs::query::Has, prelude::*};
 use bevy_xpbd_3d::{math::*, prelude::*, SubstepSchedule, SubstepSet};
 pub struct CharacterControllerPlugin;

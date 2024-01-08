@@ -1,6 +1,6 @@
 use crate::{
     damage::Damage,
-    damage_text::{spawn_damage_text_on_entity},
+    damage_text::spawn_damage_text_on_entity,
     health::Health,
     hit_box::HitBox,
     utils::safe_minus,

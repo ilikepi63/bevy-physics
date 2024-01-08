@@ -123,7 +123,7 @@ impl OrbitCameraPlugin {
         mut query: Query<&OrbitCamera>,
     ) {
         let mut delta = Vec2::ZERO;
-        for event in mouse_motion_events.iter() {
+        for event in mouse_motion_events.read() {
             delta += event.delta;
         }
         for camera in query.iter_mut() {
@@ -144,16 +144,14 @@ impl OrbitCameraPlugin {
             }
 
             for event in events.read() {
-                match event {
-                    CameraEvents::Orbit(delta) => {
+                if let CameraEvents::Orbit(delta) =  event {
                         camera.x -= delta.x * camera.rotate_sensitivity * time.delta_seconds();
                         camera.y -= delta.y * camera.rotate_sensitivity * time.delta_seconds();
                         camera.y = camera
                             .y
                             .max(*camera.pitch_range.start())
                             .min(*camera.pitch_range.end());
-                    }
-                    _ => {}
+
                 }
             }
         }

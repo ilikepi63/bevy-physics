@@ -3,7 +3,7 @@
 // DoT/HoT
 // Increase damage done/taken
 
-use bevy::{prelude::*};
+use bevy::prelude::*;
 
 use crate::{
     damage::{apply_damage, apply_health},
@@ -11,9 +11,9 @@ use crate::{
 };
 
 pub enum Aura {
-    MovementEffect,
-    OvertimeEffect,
-    DamageChange,
+    // MovementEffect,
+    // OvertimeEffect,
+    // DamageChange,
 }
 
 /// OVERTIME
@@ -47,8 +47,8 @@ impl Overtime {
 
 pub enum OvertimeUnit {
     Second,
-    Hour,
-    Minute,
+    // Hour,
+    // Minute,
 }
 
 pub fn apply_overtime(
@@ -70,7 +70,7 @@ pub fn apply_overtime(
     }
 }
 
-pub fn remove_overtime(
+pub fn _remove_overtime(
     entity: Entity,
     commands: &mut Commands,
     overtime: Overtime,
@@ -129,18 +129,18 @@ fn overtime_system(
 }
 
 /// MOVEMENT EFFECT
-struct MovementEffect {
+struct _MovementEffect {
     decrease_increase_flag: bool, // true -> increase, false -> decrease,
     percentage_change: u8, // value between 1-100 that determines how fast/slow this effect makes the target
 }
 
 /// DAMAGE INCREMENT/DECREMENT
-struct DamageChange {
+struct _DamageChange {
     amount: u32,
-    value_type: DamangeChangeType,
+    value_type: _DamageChangeType,
 }
 
-enum DamangeChangeType {
+enum _DamageChangeType {
     Percent,
     Amount,
 }

@@ -1,4 +1,4 @@
-use bevy::{prelude::*};
+use bevy::prelude::*;
 
 use crate::{
     health_bars::{
@@ -107,7 +107,6 @@ fn update_damage_text(
                 sections: [TextSection {
                     value: format!("{current}"),
                     style,
-                    ..default()
                 }]
                 .to_vec(),
                 ..default()

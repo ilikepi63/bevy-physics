@@ -3,7 +3,7 @@ use std::time::Duration;
 
 use crate::character_controller::Player;
 
-use super::{CastSpellFire};
+use super::CastSpellFire;
 
 #[derive(Component)]
 pub struct Casting {
@@ -12,7 +12,7 @@ pub struct Casting {
     pub spell_id: String,
 }
 
-pub fn setup_cast_bar() {}
+// pub fn setup_cast_bar() {}
 
 pub fn casting_system(
     // this should also be the player

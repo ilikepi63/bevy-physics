@@ -7,7 +7,7 @@ use bevy_xpbd_3d::{
 };
 
 use crate::{
-    controller::{CharacterControllerBundle},
+    controller::CharacterControllerBundle,
     health::Health,
     health_bars::PrimaryCamera,
     orbit_camera::{self},

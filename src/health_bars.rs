@@ -1,4 +1,4 @@
-use bevy::{prelude::*};
+use bevy::prelude::*;
 
 use crate::{health::Health, orbit_camera::OrbitCamera};
 
@@ -141,7 +141,6 @@ fn update_healthbars(
                 sections: [TextSection {
                     value: format!("{current}/{max}"),
                     style,
-                    ..default()
                 }]
                 .to_vec(),
                 ..default()

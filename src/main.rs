@@ -1,16 +1,13 @@
-
+#![allow(clippy::type_complexity)]
 
 
 use std::time::Duration;
 
-use auras::{AurasPlugin};
+use auras::AurasPlugin;
 use bevy::app::{Startup, Update};
-use bevy::ecs::event::{EventWriter, ManualEventReader};
+use bevy::ecs::event::EventWriter;
 
-
-use bevy::input::mouse::MouseMotion;
-
-use bevy::pbr::{AmbientLight};
+use bevy::pbr::AmbientLight;
 use bevy::prelude::{
     App, Color, Commands, Component, Input, KeyCode, MouseButton, Query, Res,
     Resource, With,
@@ -30,13 +27,13 @@ use bevy::DefaultPlugins;
 use bevy_xpbd_3d::plugins::{PhysicsDebugPlugin, PhysicsPlugins};
 use character_controller::{create_character_controller, update_character_transform};
 
-use damage_text::{DamageTextPlugin};
+use damage_text::DamageTextPlugin;
 use enemy::EnemyPlugin;
-use health::{health_system};
-use health_bars::{HealthBarPlugin};
-use lifetime::{LifetimePlugin};
-use map::{setup_map};
-use projectile::{ProjectilePlugin};
+use health::health_system;
+use health_bars::HealthBarPlugin;
+use lifetime::LifetimePlugin;
+use map::setup_map;
+use projectile::ProjectilePlugin;
 use spells::{CastSpellInit, SpellsPlugin};
 use ui::UIPlugin;
 
@@ -192,7 +189,7 @@ fn setup_graphics(mut commands: Commands) {
 
 #[derive(Resource, Default)]
 struct InputState {
-    reader_motion: ManualEventReader<MouseMotion>,
+    // reader_motion: ManualEventReader<MouseMotion>,
 }
 
 fn cursor_grab(

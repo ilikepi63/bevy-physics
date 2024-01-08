@@ -1,5 +1,5 @@
 // use bevy_healu
-use bevy::{prelude::*};
+use bevy::prelude::*;
 
 #[derive(Component)]
 pub struct Health {
