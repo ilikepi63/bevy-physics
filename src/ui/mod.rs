@@ -1,7 +1,5 @@
 use bevy::prelude::*;
 
-
-
 use self::{
     action_bar::setup_action_bar,
     cast_bar::{

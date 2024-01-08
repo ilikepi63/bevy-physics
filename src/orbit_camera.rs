@@ -35,7 +35,6 @@ use std::ops::RangeInclusive;
 
 use crate::character_controller::{CharacterDirection, Player};
 
-
 const LINE_TO_PIXEL_RATIO: f32 = 0.1;
 
 #[derive(Event)]
@@ -127,7 +126,10 @@ impl OrbitCameraPlugin {
             delta += event.delta;
         }
         for camera in query.iter_mut() {
-            if camera.enabled && mouse_button_input.pressed(camera.rotate_button) | mouse_button_input.pressed(camera.pan_button) {
+            if camera.enabled
+                && mouse_button_input.pressed(camera.rotate_button)
+                    | mouse_button_input.pressed(camera.pan_button)
+            {
                 events.send(CameraEvents::Orbit(delta))
             }
         }
@@ -144,14 +146,13 @@ impl OrbitCameraPlugin {
             }
 
             for event in events.read() {
-                if let CameraEvents::Orbit(delta) =  event {
-                        camera.x -= delta.x * camera.rotate_sensitivity * time.delta_seconds();
-                        camera.y -= delta.y * camera.rotate_sensitivity * time.delta_seconds();
-                        camera.y = camera
-                            .y
-                            .max(*camera.pitch_range.start())
-                            .min(*camera.pitch_range.end());
-
+                if let CameraEvents::Orbit(delta) = event {
+                    camera.x -= delta.x * camera.rotate_sensitivity * time.delta_seconds();
+                    camera.y -= delta.y * camera.rotate_sensitivity * time.delta_seconds();
+                    camera.y = camera
+                        .y
+                        .max(*camera.pitch_range.start())
+                        .min(*camera.pitch_range.end());
                 }
             }
         }

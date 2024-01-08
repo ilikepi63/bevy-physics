@@ -1,10 +1,7 @@
 use bevy::prelude::*;
 use bevy_xpbd_3d::components::RigidBody;
 
-use crate::{
-    health::Health,
-    hit_box::HitBox,
-};
+use crate::{health::Health, hit_box::HitBox};
 
 #[derive(Debug, Component)]
 pub struct Enemy;

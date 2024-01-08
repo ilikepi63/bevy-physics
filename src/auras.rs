@@ -123,7 +123,9 @@ fn overtime_system(
 
         // remove the buff if there are no overtimes working on the thing
         if overtime_comp.applied.is_empty() {
-            if let Some(mut ent) = commands.get_entity(entity) { ent.remove::<OvertimeComponent>(); }
+            if let Some(mut ent) = commands.get_entity(entity) {
+                ent.remove::<OvertimeComponent>();
+            }
         };
     }
 }

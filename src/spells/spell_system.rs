@@ -15,7 +15,6 @@ use crate::{
 
 use super::{casting::Casting, model::CastSpellFire, CastSpellInit, CastTime};
 
-
 pub fn spell_init_system(
     mut cast_spell_init_events: EventReader<CastSpellInit>,
     mut cast_spell_fire_events: EventWriter<CastSpellFire>,

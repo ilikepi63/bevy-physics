@@ -1,6 +1,5 @@
 #![allow(clippy::type_complexity)]
 
-
 use std::time::Duration;
 
 use auras::AurasPlugin;
@@ -9,20 +8,12 @@ use bevy::ecs::event::EventWriter;
 
 use bevy::pbr::AmbientLight;
 use bevy::prelude::{
-    App, Color, Commands, Component, Input, KeyCode, MouseButton, Query, Res,
-    Resource, With,
+    App, Color, Commands, Component, Input, KeyCode, MouseButton, Query, Res, Resource, With,
 };
-
-
-
-
-
 
 use bevy::window::{CursorGrabMode, PrimaryWindow, Window};
 use bevy::DefaultPlugins;
 // use bevy_inspector_egui::egui::Key;
-
-
 
 use bevy_xpbd_3d::plugins::{PhysicsDebugPlugin, PhysicsPlugins};
 use character_controller::{create_character_controller, update_character_transform};

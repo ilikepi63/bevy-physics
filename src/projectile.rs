@@ -1,8 +1,5 @@
 use crate::{
-    damage::Damage,
-    damage_text::spawn_damage_text_on_entity,
-    health::Health,
-    hit_box::HitBox,
+    damage::Damage, damage_text::spawn_damage_text_on_entity, health::Health, hit_box::HitBox,
     utils::safe_minus,
 };
 use bevy::prelude::*;

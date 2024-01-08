@@ -169,8 +169,7 @@ fn keyboard_input(
     //     _ => Vec2::ZERO
     // };
 
-    let direction =
-        Vector2::new(movement.x as Scalar, movement.z as Scalar).clamp_length_max(1.0);
+    let direction = Vector2::new(movement.x as Scalar, movement.z as Scalar).clamp_length_max(1.0);
 
     if direction != Vector2::ZERO {
         movement_event_writer.send(MovementAction::Move(direction));
