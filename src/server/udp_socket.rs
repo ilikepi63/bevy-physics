@@ -1,5 +1,6 @@
 use std::{net::UdpSocket, sync::mpsc};
 use super::messages::{ClientMessages, ServerMessages};
+use std::sync::mpsc::Receiver;
 
 pub fn start(port: u16, client_rx: Receiver<ClientMessages>) -> std::io::Result<Receiver<ServerMessages>> {
 
@@ -18,7 +19,7 @@ pub fn start(port: u16, client_rx: Receiver<ClientMessages>) -> std::io::Result<
 
         loop {
 
-            if let Ok((amt, src)) = socket.recv_from(&mut buf) {
+            if let Ok((amt, src)) = socket.recv_from(&mut recv_buf) {
                 // deserialize the message and 
 
                 

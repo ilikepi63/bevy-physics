@@ -1,11 +1,11 @@
 use std::sync::mpsc::{Receiver, Sender};
 
 use bevy::prelude::*;
-use super::messages::{Messages, ClientMessages, ServerMessages};
+use super::messages::{ ClientMessages, ServerMessages};
 
 
 #[derive(Resource)]
-struct MessageReceiver(Receiver<ServerMessages>);
+struct MessageReceiver();
 
 #[derive(Resource)]
 struct MessageSender(Sender<ClientMessages>);
@@ -27,7 +27,7 @@ impl Plugin for NetworkPlugin{
         
 
 
-        app.add_event::<Messages>();
+        app.add_event::<ClientMessages>();
 
         // add the channel as a resource
         // implement the update system to add 

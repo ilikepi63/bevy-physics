@@ -104,12 +104,7 @@ fn cast_spell(
         .insert(Lifetime {
             timer: Timer::from_seconds(1.0, TimerMode::Once),
         })
-        // .insert(Velocity::linear(direction * 100.0))
         .insert(Name::new("Bullet"))
-        // .insert(RigidBody::Dynamic)
-        // .insert(ActiveEvents::COLLISION_EVENTS)
-        // .insert(ContactForceEventThreshold(30.0))
-        // .insert(Collider::ball(1.0))
         .insert(Damage { amount: 10 })
         .insert(Projectile {
             despawn_after_hit: true,

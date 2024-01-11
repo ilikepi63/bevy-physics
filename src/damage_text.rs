@@ -99,7 +99,7 @@ fn update_damage_text(
             let current = text.value;
             let style = TextStyle {
                 font_size: 20.0,
-                color: Color::BLACK,
+                color: Color::WHITE,
                 font: asset_server.load("Rosela.ttf"),
             };
 
@@ -151,7 +151,7 @@ fn spawn_damage_text_children(
                                 style: TextStyle {
                                     font: asset_server.load("Rosela.ttf"),
                                     font_size: 100.0,
-                                    color: Color::BLACK,
+                                    color: Color::WHITE,
                                 },
                             }],
                             ..Default::default()

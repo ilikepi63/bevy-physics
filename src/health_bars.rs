@@ -37,7 +37,7 @@ impl Default for HealthBar {
         Self {
             offset: Vec2::new(0.0, 0.0),
             size: 10.,
-            color: Color::BLACK,
+            color: Color::WHITE,
         }
     }
 }
@@ -181,7 +181,7 @@ fn spawn_health_bar_children(
                             style: TextStyle {
                                 font: asset_server.load("Rosela.ttf"),
                                 font_size: 100.0,
-                                color: Color::BLACK,
+                                color: Color::WHITE,
                             },
                         }],
                         ..Default::default()
