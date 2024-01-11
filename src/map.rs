@@ -20,7 +20,12 @@ pub fn setup_map(
             // transform: Transform::from_rotation(Quat::from_rotation_y(-std::f32::consts::PI * 0.5)),
             ..default()
         },
-        AsyncSceneCollider::new(Some(ComputedCollider::TriMesh)),
+        AsyncSceneCollider::new(Some(ComputedCollider::ConvexDecomposition(
+            VHACDParameters::default(),
+        )))
+        // Make the arms heavier to make it easier to stand upright
+        .with_density_for_name("armL_mesh", 5.0)
+        .with_density_for_name("armR_mesh", 5.0),
         RigidBody::Static,
         Floor{}
     ));

@@ -76,7 +76,7 @@ pub fn create_character_controller(
     //     // Velocity::zero(), // RigidBodyBuilder::dynamic().lock_rotations().build(),
     // ));
 
-    let transform = Transform::from_xyz(0.0, 1.5, 0.0);
+    let transform = Transform::from_xyz(0.0, 5.5, 0.0);
 
     let character_translation = CharacterTranslation(transform.translation);
 

@@ -21,6 +21,7 @@ use character_controller::{create_character_controller, update_character_transfo
 
 use damage_text::DamageTextPlugin;
 use enemy::EnemyPlugin;
+use fps_measure::{FpsMeasurePlugin, setup_fps_counter, fps_text_update_system};
 use health::health_system;
 use health_bars::HealthBarPlugin;
 use lifetime::LifetimePlugin;
@@ -29,9 +30,9 @@ use projectile::ProjectilePlugin;
 use spells::{CastSpellInit, SpellsPlugin};
 use ui::UIPlugin;
 use bevy_mod_raycast::prelude::*;
+use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 
 pub mod character_controller;
-// pub mod health;
 mod aoe;
 mod auras;
 mod controller;
@@ -50,6 +51,7 @@ mod spells;
 mod ui;
 pub mod utils;
 mod server;
+mod fps_measure;
 
 pub const PLAYER: u16 = 0b1;
 pub const STATIC_GEOMETRY: u16 = 0b10;
@@ -65,68 +67,11 @@ impl Default for MovementResource {
     }
 }
 
-// Runs on startup, adds a ground plane
-// fn setup_world(
-//     mut commands: Commands,
-//     mut meshes: ResMut<Assets<Mesh>>,
-//     mut materials: ResMut<Assets<StandardMaterial>>,
-// ) {
-//     // plane
-//     commands
-//         .spawn(PbrBundle {
-//             mesh: meshes.add(shape::Plane::from_size(5000.0).into()),
-//             material: materials.add(Color::DARK_GREEN.into()),
-//             ..default()
-//         })
-//         .insert()
-//         .insert(Floor {});
-// }
-
 #[derive(Component)]
 struct Despawnable {}
 
 #[derive(Component)]
 pub struct Floor {}
-
-// fn spawn_gltf(mut commands: Commands, asset_server: Res<AssetServer>, assets: Res<Assets<Mesh>>) {
-//     // note that we have to include the `Scene0` label
-
-//     std::thread::spawn(move || {
-//         let mesh: Handle<Mesh> = asset_server.load("map.glb#Mesh0/Primitive0");
-//         loop {
-//             match asset_server.get_load_state(mesh.clone()) {
-//                 LoadState::Failed => panic!("Failed to load the map mesh"),
-//                 LoadState::Loaded => {
-//                     let my_gltf = asset_server.load("map.glb#Scene0");
-
-//                     let actual_mesh = assets.get(&mesh).unwrap();
-
-//                     let collider =
-//                         Collider::from_bevy_mesh(actual_mesh, &ComputedColliderShape::default())
-//                             .unwrap();
-//                     commands.spawn((
-//                         SceneBundle {
-//                             scene: my_gltf,
-//                             transform: Transform::from_xyz(2.0, 0.0, -5.0),
-//                             ..Default::default()
-//                         },
-//                         RigidBody::Dynamic,
-//                         Floor {},
-//                         collider,
-//                     ));
-//                 },
-//                 _ => {
-//                     std::thread::sleep(Duration::from_millis(100));
-//                     continue;
-//
-//     }
-//             }
-//         }
-//     });
-
-// }
-
-// HEALTH BAR
 
 fn main() {
     App::new()
@@ -136,9 +81,7 @@ fn main() {
             DefaultPlugins,
             PhysicsPlugins::default(),
             controller::CharacterControllerPlugin,
-            // RapierPhysicsPlugin::<NoUserData>::default(),
-            PhysicsDebugPlugin::default(),
-            // MapPlugin,
+            FrameTimeDiagnosticsPlugin::default(),
             orbit_camera::OrbitCameraPlugin,
             EnemyPlugin,
             LifetimePlugin,
@@ -150,14 +93,10 @@ fn main() {
             SpellsPlugin,
             aoe::AoeTargetingPlugin,
             DefaultRaycastingPlugin
-            // RapierDebugRenderPlugin {
-            //     enabled: true,
-            //     ..Default::default()
-            // }
         ))
         .add_systems(
             Startup,
-            (setup_map, setup_graphics, create_character_controller),
+            (setup_map, setup_graphics, create_character_controller, setup_fps_counter),
         )
         // .add_startup_system(setup_world)
         .add_systems(
@@ -168,6 +107,7 @@ fn main() {
                 health_system,
                 basic_attack,
                 update_character_transform, // character_direction_system
+                fps_text_update_system
                 // raycast
             ),
         )
@@ -183,35 +123,7 @@ fn setup_graphics(mut commands: Commands) {
     });
 }
 
-// fn raycast(cursor_ray: Res<CursorRay>, mut raycast: Raycast, mut gizmos: Gizmos) {
-//     if let Some(cursor_ray) = **cursor_ray {
-        
-//         if let Some((entity, intersection_data)) = raycast.cast_ray(cursor_ray, &Default::default()).first(){
 
-//             intersection_data.position();
-
-                
-//             commands.spawn(
-//                 // ParticleEffectBundle {
-//                 //     effect: ParticleEffect::new(portal),
-//                 //     transform: Transform::IDENTITY,
-//                 //     ..Default::default()
-//                 // },
-//                 PbrBundle {
-//                     mesh: meshes.add(Mesh::from(shape::UVSphere {
-//                         radius: 10.0,
-//                         stacks: 18,
-//                         sectors: 36,
-//                     })),
-//                     material: materials.add(Color::WHITE.into()),
-//                     transform: Transform::from_xyz(global_cursor.x, global_cursor.y, global_cursor.z),
-//                     ..default()
-//                 },
-//             );
-
-//         };
-//     }
-// }
 
 #[derive(Resource, Default)]
 struct InputState {
