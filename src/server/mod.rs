@@ -1,5 +1,9 @@
 use bevy::prelude::*;
 
+pub mod messages;
+pub mod movement;
+pub mod udp_socket;
+pub mod plugin;
 
 #[derive(Event)]
 struct MessageReceiveEvent{}
